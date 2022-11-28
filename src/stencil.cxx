@@ -70,9 +70,10 @@ void init() {
 }
 
 void one_iteration() {
-    #pragma omp parallel for collapse(3)
+    #pragma omp parallel for collapse(2)
     for (ui64 z = 0; z < DIMZ; z++) {
         for (ui64 y = 0; y < DIMY; y++) {
+            #pragma omp simd
             for (ui64 x = 0; x < DIMX; x++) {
                 ui64 xyz = DIMXYZ(x, y, z);
                 matC[xyz] = matA[xyz] * matB[xyz];
@@ -96,9 +97,10 @@ void one_iteration() {
         }
     }
     // A = C
-    #pragma omp parallel for collapse(3)
+    #pragma omp parallel for collapse(2)
     for (ui64 z = 0; z < DIMZ; z++) {
         for (ui64 y = 0; y < DIMY; y++) {
+            #pragma omp simd
             for (ui64 x = 0; x < DIMX; x++) {
                 ui64 xyz = DIMXYZ(x, y, z);
                 matA[xyz] = matC[xyz];

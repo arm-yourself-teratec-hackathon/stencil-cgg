@@ -1,8 +1,8 @@
 # Directories to ignore
-cgg/
+maqao/
 ref/
 
 # Files to ignore
 stencil
-stencil-x86
 cfg.lua
+*.tar
