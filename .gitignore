@@ -1,0 +1,8 @@
+# Directories to ignore
+cgg/
+ref/
+
+# Files to ignore
+stencil
+stencil-x86
+cfg.lua
