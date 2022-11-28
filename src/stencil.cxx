@@ -70,7 +70,7 @@ void init() {
 }
 
 void one_iteration() {
-    #pragma omp parallel for collapse(2)
+    #pragma omp parallel for collapse(2) schedule(guided)
     for (ui64 z = 0; z < DIMZ; z++) {
         for (ui64 y = 0; y < DIMY; y++) {
             #pragma omp simd
@@ -78,7 +78,7 @@ void one_iteration() {
                 ui64 xyz = DIMXYZ(x, y, z);
                 matC[xyz] = matA[xyz] * matB[xyz];
                 for (ui64 o = 1; o <= order; o++) {
-                    const double exponent = pow(17.0, o);
+                    const double exponent = 1.0 / pow(17.0, o);
                     const ui64 xpo_yz = DIMXYZ(x + o, y, z);
                     const ui64 xmo_yz = DIMXYZ(x - o, y, z);
                     const ui64 x_ypo_z = DIMXYZ(x, y + o, z);
@@ -86,18 +86,19 @@ void one_iteration() {
                     const ui64 xy_zpo = DIMXYZ(x, y, z + o);
                     const ui64 xy_zmo = DIMXYZ(x, y, z - o);
 
-                    matC[xyz] += matA[xpo_yz] * matB[xpo_yz] / exponent;
-                    matC[xyz] += matA[xmo_yz] * matB[xmo_yz] / exponent;
-                    matC[xyz] += matA[x_ypo_z] * matB[x_ypo_z] / exponent;
-                    matC[xyz] += matA[x_ymo_z] * matB[x_ymo_z] / exponent;
-                    matC[xyz] += matA[xy_zpo] * matB[xy_zpo] / exponent;
-                    matC[xyz] += matA[xy_zmo] * matB[xy_zmo] / exponent;
+                    matC[xyz] += matA[xpo_yz] * matB[xpo_yz] * exponent;
+                    matC[xyz] += matA[xmo_yz] * matB[xmo_yz] * exponent;
+                    matC[xyz] += matA[x_ypo_z] * matB[x_ypo_z] * exponent;
+                    matC[xyz] += matA[x_ymo_z] * matB[x_ymo_z] * exponent;
+                    matC[xyz] += matA[xy_zpo] * matB[xy_zpo] * exponent;
+                    matC[xyz] += matA[xy_zmo] * matB[xy_zmo] * exponent;
                 }
             }
         }
     }
+
     // A = C
-    #pragma omp parallel for collapse(2)
+    #pragma omp parallel for collapse(2) schedule(guided)
     for (ui64 z = 0; z < DIMZ; z++) {
         for (ui64 y = 0; y < DIMY; y++) {
             #pragma omp simd
