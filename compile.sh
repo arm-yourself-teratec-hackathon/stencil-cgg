@@ -1,2 +1,2 @@
 #!/bin/bash
-g++ -O3 stencil.cxx -o stencil
+icpc -xHost -Ofast -g3 -fno-omit-frame-pointer -fopenmp -qmkl -funroll-loops stencil.cxx -o stencil

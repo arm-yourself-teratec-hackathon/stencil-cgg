@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <iostream>
 #include <math.h>
+#include <omp.h>
 #include <sys/time.h>
 
 double dml_micros() {

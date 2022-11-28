@@ -1,4 +1,2 @@
-#!/usr/bin/env bash
-
-
+#!/bin/bash
 ./stencil 100 100 100 5 
