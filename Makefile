@@ -1,24 +1,28 @@
 SRC := src/stencil.cxx
 BIN := stencil
+COMMON_FLAGS := -Ofast -finline-functions -g -fno-omit-frame-pointer
 
 gnu: $(SRC)
-	g++ -mcpu=native -Ofast -funroll-loops -finline-functions -fopenmp -g $? -o $(BIN)
+	g++ -march=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN)
+
+llvm: $(SRC)
+	clang++ -march=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN)
 
 arm: $(SRC)
-	armclang++ -mcpu=native -Ofast -funroll-loops -finline-functions -fopenmp -g $? -o $(BIN)
+	armclang++ -mcpu=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN)
 
 nvc: $(SRC)
-	nvc++ -march=neoverse-v1 -O4 -funroll-loops -finline-functions -fopenmp -g $? -o $(BIN)
+	nvc++ -march=neoverse-v1+sve $(COMMON_FLAGS) -mp $? -o $(BIN)
 
-itl: $(SRC)
-	icpc -xHost -mavx -Ofast -funroll-loops -finline-functions -qopenmp -qmkl -g $? -o $(BIN)
+intel: $(SRC)
+	icpx -xHost $(COMMON_FLAGS) -mavx -funroll-loops -qopenmp -qmkl $? -o $(BIN)
 
 run: $(BIN)
-	./stencil 100 100 100 5
+	@./stencil 100 100 100 5
 	
 check: $(BIN)
-	python3 scripts/speedup.py
+	@python3 scripts/speedup.py
 
 prof:
-	maqao oneview -R1 --config=cfg.lua -xp=maqao --replace
+	@maqao oneview -R1 --config=cfg.lua -xp=maqao --replace
 
