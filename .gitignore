@@ -6,3 +6,4 @@ ref/
 stencil
 cfg.lua
 *.tar
+*.out
