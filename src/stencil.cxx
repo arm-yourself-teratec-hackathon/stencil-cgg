@@ -1,11 +1,11 @@
-#include <assert.h>
+#include <cassert>
+#include <cmath>
 #include <cstdint>
 #include <iostream>
-#include <math.h>
-#include <omp.h>
 #include <sys/time.h>
 #include <vector>
 
+// Functions forward-declarations
 [[nodiscard]] auto main(int32_t argc, char** argv) -> int32_t;
 auto init() -> void;
 auto one_iteration() -> void;
@@ -55,7 +55,7 @@ auto init() -> void {
     matB = std::vector<double>(MATsize, 0.0);
     matC = std::vector<double>(MATsize, 0.0);
 
-    // Center and edges initialization, B is constant stencil for the run
+    // Center and edges initialization, B is a constant stencil for the run
     for (uint64_t z = 0; z < MAXZ; ++z) {
         for (uint64_t y = 0; y < MAXY; ++y) {
             for (uint64_t x = 0; x < MAXX; ++x) {
@@ -133,7 +133,6 @@ auto one_iteration() -> void {
     }
 
     init();
-
     for (uint64_t i = 0; i < iters; ++i) {
         // Compute one iteration of Jacobi: C = B@A
         double t1 = dml_micros();
