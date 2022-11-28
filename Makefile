@@ -17,5 +17,5 @@ run: $(BIN)
 	./stencil.sh
 	
 check: $(BIN)
-	python3 scripts/speedup.sh
+	python3 scripts/speedup.py
 
