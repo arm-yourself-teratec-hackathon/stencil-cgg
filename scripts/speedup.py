@@ -75,7 +75,7 @@ def main():
         print("\033[1mUsage:\033[0m <dim_x> <dim_y> <dim_z> <iter>")
         exit(-1)
 
-    ref = run(f"ref/stencil-x86 {dim_x} {dim_y} {dim_z} {iter}")
+    ref = run(f"ref/stencil {dim_x} {dim_y} {dim_z} {iter}")
     cur = run(f"./stencil {dim_x} {dim_y} {dim_z} {iter}")
     ref_ms = []
     cur_ms = []
