@@ -98,7 +98,7 @@ def main():
         
         # Assert that result of the current version is still valid compared to reference
         for j in range(1, 5):
-            if not math.isclose(c[j], r[j]):
+            if not math.isclose(c[j], r[j], rel_tol = 1e-13):
                 print(f"\033[1;31merror:\033[0m coefficients at iteration \033[1m#{i}\033[0m are incoherent.\n",
                       f"   -> reference is \033[34m{r[j]}\033[0m, but current is \033[34m{c[j]}\033[0m")
                 exit(-1)
