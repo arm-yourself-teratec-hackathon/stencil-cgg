@@ -59,14 +59,23 @@ def run(command: str) -> list:
     return res
 
 
+def get_ref(file: str) -> list:
+    with open(file, "r") as f:
+        c = f.read()
+        c = colorstrip(c).split('\n')
+    return c
+
+
 def main():
     dim_x = 100
     dim_y = 100
     dim_z = 100
     iter = 5
+    rerun = False
     
     # Allow user to override default parameters
-    if len(sys.argv) == 5:
+    if len(sys.argv) == 6 and sys.argv[1] == "-r":
+        rerun = True
         dim_x = sys.argv[1]
         dim_y = sys.argv[2]
         dim_z = sys.argv[3]
@@ -75,7 +84,11 @@ def main():
         print("\033[1mUsage:\033[0m <dim_x> <dim_y> <dim_z> <iter>")
         exit(-1)
 
-    ref = run(f"ref/stencil {dim_x} {dim_y} {dim_z} {iter}")
+    if rerun:
+        ref = run(f"ref/stencil {dim_x} {dim_y} {dim_z} {iter}")
+    else:
+        ref = get_ref("ref/ref.out")
+        
     cur = run(f"./stencil {dim_x} {dim_y} {dim_z} {iter}")
     ref_ms = []
     cur_ms = []
