@@ -25,6 +25,7 @@ uint64_t xyplane, MATsize;
 std::vector<double> matA;
 std::vector<double> matB;
 std::vector<double> matC;
+std::vector<double> exponents;
 
 /// Get current time in microseconds.
 [[nodiscard]] auto dml_micros() -> double {
@@ -73,6 +74,11 @@ auto init() -> void {
             }
         }
     }
+
+    // Initialize the exponents array
+    for (uint64_t o = 1; o <= order; ++o) {
+        exponents.push_back(1.0 / pow(17.0, o));
+    }
 }
 
 auto one_iteration() -> void {
@@ -85,7 +91,7 @@ auto one_iteration() -> void {
                 matC[xyz] = matA[xyz] * matB[xyz];
 
                 for (uint64_t o = 1; o <= order; ++o) {
-                    const double exponent = 1.0 / pow(17.0, o);
+                    const double exp = exponents[o - 1];
                     const uint64_t xpo_yz = DIMXYZ(x + o, y, z);
                     const uint64_t xmo_yz = DIMXYZ(x - o, y, z);
                     const uint64_t x_ypo_z = DIMXYZ(x, y + o, z);
@@ -93,12 +99,12 @@ auto one_iteration() -> void {
                     const uint64_t xy_zpo = DIMXYZ(x, y, z + o);
                     const uint64_t xy_zmo = DIMXYZ(x, y, z - o);
 
-                    matC[xyz] += matA[xpo_yz] * matB[xpo_yz] * exponent;
-                    matC[xyz] += matA[xmo_yz] * matB[xmo_yz] * exponent;
-                    matC[xyz] += matA[x_ypo_z] * matB[x_ypo_z] * exponent;
-                    matC[xyz] += matA[x_ymo_z] * matB[x_ymo_z] * exponent;
-                    matC[xyz] += matA[xy_zpo] * matB[xy_zpo] * exponent;
-                    matC[xyz] += matA[xy_zmo] * matB[xy_zmo] * exponent;
+                    matC[xyz] += matA[xpo_yz] * matB[xpo_yz] * exp;
+                    matC[xyz] += matA[xmo_yz] * matB[xmo_yz] * exp;
+                    matC[xyz] += matA[x_ypo_z] * matB[x_ypo_z] * exp;
+                    matC[xyz] += matA[x_ymo_z] * matB[x_ymo_z] * exp;
+                    matC[xyz] += matA[xy_zpo] * matB[xy_zpo] * exp;
+                    matC[xyz] += matA[xy_zmo] * matB[xy_zmo] * exp;
                 }
             }
         }
@@ -131,7 +137,7 @@ auto one_iteration() -> void {
         one_iteration();
         double t2 = dml_micros();
 
-        printf("_0_ ");
+        printf("_0_");
         for (uint64_t j = 0; j < 5; ++j) {
             printf("%18.15lf ", matA[DIMXYZ(DIMX / 2 + j, DIMY / 2 + j, DIMZ / 2 + j)]);
         }
