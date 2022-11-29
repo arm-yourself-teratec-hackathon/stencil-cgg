@@ -1,6 +1,7 @@
 #include <cassert>
 #include <cmath>
 #include <cstdint>
+#include <cstring>
 #include <iostream>
 #include <sys/time.h>
 #include <vector>
@@ -17,7 +18,7 @@ auto one_iteration() -> void;
 constexpr uint64_t order = 8;
 constexpr double ONE_MILLION = 1000000.0;
 
-// Globals declarations
+// Global variables declarations
 uint64_t DIMX, DIMY, DIMZ, iters;
 uint64_t MAXX, MAXY, MAXZ;
 uint64_t xyplane, MATsize;
@@ -33,13 +34,13 @@ std::vector<double> matC;
     return tv.tv_sec * ONE_MILLION + tv.tv_usec;
 }
 
-/// Returns an offset in the center of a matrix of linear dimensions [0:DIM-1]
+/// Returns an offset in the center of a matrix of linear dimensions [0:DIM-1].
 [[nodiscard]] auto DIMXYZ(uint64_t x, uint64_t y, uint64_t z) -> uint64_t {
     return ((z + order) * xyplane + (y + order) * MAXX + x + order);
 }
 
 /// Returns an offset in a matrix of linear dimensions [-order:DIM+order-1] but
-/// in indices of [0:DIM+order*2-1]
+/// in indices of [0:DIM+order*2-1].
 [[nodiscard]] auto MATXYZ(uint64_t x, uint64_t y, uint64_t z) -> uint64_t {
     return (x + y * MAXX + z * xyplane);
 }
@@ -75,7 +76,7 @@ auto init() -> void {
 }
 
 auto one_iteration() -> void {
-    #pragma omp parallel for collapse(2) schedule(guided)
+    #pragma omp parallel for schedule(guided)
     for (uint64_t z = 0; z < DIMZ; ++z) {
         for (uint64_t y = 0; y < DIMY; ++y) {
             #pragma omp simd
@@ -104,16 +105,7 @@ auto one_iteration() -> void {
     }
 
     // A = C
-    #pragma omp parallel for collapse(2) schedule(guided)
-    for (uint64_t z = 0; z < DIMZ; ++z) {
-        for (uint64_t y = 0; y < DIMY; ++y) {
-            #pragma omp simd
-            for (uint64_t x = 0; x < DIMX; ++x) {
-                uint64_t xyz = DIMXYZ(x, y, z);
-                matA[xyz] = matC[xyz];
-            }
-        }
-    }
+    memcpy(matA.data(), matC.data(), MATsize * sizeof(double));
 }
 
 [[nodiscard]] auto main(int32_t argc, char** argv) -> int32_t {
