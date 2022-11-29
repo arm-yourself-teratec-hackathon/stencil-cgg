@@ -3,13 +3,13 @@ BIN := stencil
 COMMON_FLAGS := -Ofast -finline-functions -g -fno-omit-frame-pointer
 
 gnu: $(SRC)
-	g++ -march=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN)
+	g++ -march=native $(COMMON_FLAGS) -funroll-loops -fstrict-aliasing -fopenmp $? -o $(BIN)
 
 llvm: $(SRC)
 	clang++ -march=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN)
 
 arm: $(SRC)
-	armclang++ -mcpu=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN)
+	armclang++ -mcpu=native $(COMMON_FLAGS) -funroll-loops -fstrict-aliasing -fopenmp -armpl $? -o $(BIN)
 
 nvc: $(SRC)
 	nvc++ -march=neoverse-v1+sve $(COMMON_FLAGS) -mp $? -o $(BIN)
@@ -24,5 +24,7 @@ check: $(BIN)
 	@python3 scripts/speedup.py
 
 prof:
-	@maqao oneview -R1 --config=cfg.lua -xp=maqao --replace
+	@maqao oneview -R1 --config=cfg.lua -xp=maqao_arm --replace
 
+clean:
+	@rm -rf $(BIN) slurm_jobs/* maqao_arm

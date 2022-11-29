@@ -137,7 +137,7 @@ auto one_iteration() -> void {
         one_iteration();
         double t2 = dml_micros();
 
-        printf("_0_");
+        printf("_0_ ");
         for (uint64_t j = 0; j < 5; ++j) {
             printf("%18.15lf ", matA[DIMXYZ(DIMX / 2 + j, DIMY / 2 + j, DIMZ / 2 + j)]);
         }

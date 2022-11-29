@@ -1,5 +1,5 @@
 # Directories to ignore
-maqao/
+maqao*/
 ref/
 
 # Files to ignore

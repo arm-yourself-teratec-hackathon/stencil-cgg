@@ -76,20 +76,20 @@ def main():
     # Allow user to override default parameters
     if len(sys.argv) == 6 and sys.argv[1] == "-r":
         rerun = True
-        dim_x = sys.argv[1]
-        dim_y = sys.argv[2]
-        dim_z = sys.argv[3]
-        iter = sys.argv[4]
+        dim_x = sys.argv[2]
+        dim_y = sys.argv[3]
+        dim_z = sys.argv[4]
+        iter = sys.argv[5]
     elif len(sys.argv) != 1:
-        print("\033[1mUsage:\033[0m <dim_x> <dim_y> <dim_z> <iter>")
+        print("\033[1mUsage:\033[0m [-r <dim_x> <dim_y> <dim_z> <iter>]")
         exit(-1)
 
     if rerun:
         ref = run(f"ref/stencil {dim_x} {dim_y} {dim_z} {iter}")
     else:
         ref = get_ref("ref/ref.out")
-        
     cur = run(f"./stencil {dim_x} {dim_y} {dim_z} {iter}")
+
     ref_ms = []
     cur_ms = []
     for i, (r, c) in enumerate(zip(ref, cur)):
@@ -97,10 +97,10 @@ def main():
         c = [float(x) for x in c.split()[1:]]
         
         # Assert that result of the current version is still valid compared to reference
-        for j in range(1, 5):
-            if not math.isclose(c[j], r[j], rel_tol = 1e-13):
-                print(f"\033[1;31merror:\033[0m coefficients at iteration \033[1m#{i}\033[0m are incoherent.\n",
-                      f"   -> reference is \033[34m{r[j]}\033[0m, but current is \033[34m{c[j]}\033[0m")
+        for j, (vr, vc) in enumerate(zip(r[:5], c[:5])):
+            if not math.isclose(vr, vc, rel_tol = 1e-8):
+                print(f"\033[1;31merror:\033[0m coefficients \033[1m#{j}\033[0m at iteration \033[1m#{i}\033[0m are incoherent.\n",
+                      f"   -> reference is \033[34m{vr}\033[0m, but current is \033[34m{vc}\033[0m")
                 exit(-1)
 
         ref_ms.append(r[6])
@@ -117,7 +117,7 @@ def main():
     
     print(f"Reference average: {ref_avg:03.2f} us")
     print(f"  Current average: {cur_avg:03.2f} us")
-    print(f"\nSpeedup: \033[1;32m{ref_avg / cur_avg:.2f}\033[0m")
+    print(f"\nSpeedup: \033[1;32m{ref_avg / cur_avg:.2f}x\033[0m")
 
 
 if __name__ == "__main__":
