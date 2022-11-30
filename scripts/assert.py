@@ -1,6 +1,7 @@
 #!/usr/bin/python
 
 import argparse
+import errno
 import functools
 import math
 import os
@@ -10,151 +11,177 @@ import sys
 # Parse program arguments
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog = "stencil-assert")
-    parser.add_argument("-r", "--rerun",
-                        nargs = 4,
-                        metavar = ("dim_x", "dim_y", "dim_z", "iter"),
+    parser.add_argument("-d", "--dimensions",
+                        nargs = 3,
+                        metavar = ("DIM_X", "DIM_Y", "DIM_Z"),
                         type = int,
-                        default = [100, 100, 100, 5],
-                        dest = "stencil_args",
-                        help = "Re-run reference code with new dimensions.")
-    parser.add_argument("-p", "--precision",
-                        metavar = "eps",
+                        default = [100, 100, 100],
+                        dest = "dims",
+                        help = "specify dimensions to use (default is 100x100x100)")
+    parser.add_argument("-i", "--iterations",
+                        metavar = "ITER",
+                        type = int,
+                        default = 5,
+                        dest = "iters",
+                        help = "specify number of iterations to use (default is 5)")
+    parser.add_argument("-a", "--accuracy",
+                        metavar = "MIN_TOL",
                         type = float,
                         default = 1e-12,
-                        dest = "precision",
-                        help = "Specify a minimum precision required to validate the run.")
-    parser.add_argument("-m", "--medium",
+                        dest = "accuracy",
+                        help = "specify the minimum accuracy required when comparing coefficients (default is 1e-12)")
+    parser.add_argument("-r", "--rerun",
                         action = "store_true",
-                        dest = "med",
-                        help = "Compare against medium run (500x500x500, 5 iterations).")
-    parser.add_argument("-b", "--big",
+                        default = False,
+                        dest = "rerun",
+                        help = "re-run reference code (uses specified dimensions, default ones otherwise)")
+    parser.add_argument("-p", "--preset",
+                        choices = ["small", "medium", "big"],
+                        default = None,
+                        dest = "preset",
+                        help = "specify a preset run to compare against: small (100x100x100), medium (500x500x500) or big (1000x1000x1000)"),
+    parser.add_argument("-o", "--output",
+                        type = str,
+                        default = None,
+                        dest = "output",
+                        help = "specify an output file of the current code (avoids running it)")
+    parser.add_argument("-f", "--fail",
                         action = "store_true",
-                        dest = "big",
-                        help = "Compare against big run (1000x1000x1000, 5 iterations).")
+                        dest = "fail",
+                        help = "specify if a run should fail if one or more coefficient do not reach the required accuracy or in case of mismatched dimensions")
     return parser
 
 
-# Strip color/formating on strings
+# Strip bold text formatting from strings
 def colorstrip(data: str) -> str:
-    find = data.find('\x03')
-    while find > -1:
-        done = False
-        data = data[0:find] + data[find+1:]
-        if len(data) <= find+1:
-            done = True
-        try:
-            assert not done
-            assert int(data[find])
-            while True:
-                assert int(data[find])
-                data = data[0:find] + data[find+1:]
-        except:
-            if not done:
-                if data[find] != ',': done = True
-
-        if (not done) and (len(data) > find+1) and (data[find] == ','):
-            try:
-                assert not done
-                assert int(data[find+1])
-                data = data[0:find] + data[find+1:]
-                data = data[0:find] + data[find+1:]
-            except:
-                done = True
-            try:
-                assert not done
-                while True:
-                    assert int(data[find])
-                    data = data[0:find] + data[find+1:]
-            except: pass
-
-        find = data.find('\x03')
-
-    data = data.replace('\x1b[1m','')
-    data = data.replace('\x1b[0m','')
-    data = data.replace('\x02','')
-    data = data.replace('\x1d','')
-    data = data.replace('\x1f','')
-    data = data.replace('\x16','')
-    data = data.replace('\x0f','')
-
-    return data
+    return data.replace('\x1b[1m', '').replace('\x1b[0m', '')
 
 
+# Run command 
 def run(command: str) -> list:
+    bin = command.split()[0]
+    if not os.path.exists(bin):
+        raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), bin)
     run = os.popen(command)
-    res = run.read()
-    res = colorstrip(res).split('\n')[:-1]
+    res = run.read().strip('\n')
     run.close()
-    return res
+    return colorstrip(res).split('\n')
 
 
-def get_ref(file: str) -> list:
+def parse_output(file: str) -> list:
     with open(file, "r") as f:
-        c = f.read()
-        c = colorstrip(c).split('\n')
-    return c
+        contents = f.read().strip('\n')
+        contents = colorstrip(contents).split('\n')
+    return contents
 
 
 def main():
     parser = build_parser()
     args = parser.parse_args()
 
-    rerun = False
-    dimx = args.stencil_args[0]
-    dimy = args.stencil_args[1]
-    dimz = args.stencil_args[2]
-    iter = args.stencil_args[3]
-    
-    # Allow user to override default parameters
-    if args.stencil_args != [100, 100, 100, 5]:
-        rerun = True
+    # Get dimensions
+    dimx = args.dims[0]
+    dimy = args.dims[1]
+    dimz = args.dims[2]
+    iter = args.iters
 
-    if rerun:
+    print(f"Dimensions: \033[1;34m{dimx}\033[0mx\033[1;34m{dimy}\033[0mx\033[1;34m{dimz}\033[0m")
+    print(f"Iterations: \033[1;34m{iter}\033[0m")
+    print(f"Accuracy:   \033[1;34m{args.accuracy}\033[0m\n")
+
+    # Override default values if using a preset
+    if args.preset == "small":
+        dimx = dimy = dimz = 100
+        iter = 5
+    elif args.preset == "medium":
+        dimx = dimy = dimz = 500
+        iter = 5
+    elif args.preset == "big":
+        dimx = dimy = dimz = 1000
+        iter = 5
+
+    # Get reference code output, either by re-running or by looking up existing
+    # reference output files
+    if args.rerun is True:
+        print("Re-running reference code...", end = ' ')
+        sys.stdout.flush()
         ref = run(f"ref/stencil {dimx} {dimy} {dimz} {iter}")
+        print(f"done{chr(10) if args.output is not None else ''}")
     else:
-        if args.med is True:
-            dimx = dimy = dimz = 500
-            iter = 5
-            ref = get_ref("ref/ref500.out")
-        elif args.big is True:
-            dimx = dimy = dimz = 1000
-            iter = 5
-            ref = get_ref("ref/ref1000.out")
+        if args.preset == "medium":
+            ref = parse_output("ref/ref500.out")
+        elif args.preset == "big":
+            ref = parse_output("ref/ref1000.out")
         else:
-            ref = get_ref("ref/ref.out")
-    cur = run(f"./stencil {dimx} {dimy} {dimz} {iter}")
+            ref = parse_output("ref/ref.out")
+    
+    if args.output is not None:
+        if os.path.exists(args.output) and os.path.isfile(args.output):
+            cur = parse_output(args.output)
+        else:
+            raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), args.output)
+    else:
+        print("Running current code...", end = ' ')
+        sys.stdout.flush()
+        cur = run(f"./stencil {dimx} {dimy} {dimz} {iter}")
+        print("done\n")
 
-    ref_ms = []
-    cur_ms = []
+
+    accuracy_errors = 0
+    dimension_errors = 0
+    # Warn user if number of iterations in reference is greater than current
+    if len(ref) > len(cur):
+        print(f"\033[1;33mwarning:\033[0m number of iterations don't match")
+        print(f"    -> reference is \033[35m{len(ref)}\033[0m, but current is only \033[35m{len(cur)}\033[0m")
+        dimension_errors += 1
+
+    ref_times = []
+    cur_times = []
     for i, (r, c) in enumerate(zip(ref, cur)):
         r = [float(x) for x in r.split()[1:]]
         c = [float(x) for x in c.split()[1:]]
+
+        # Check that dimensions match (only at first iteration)
+        if i == 0:
+            for d, (dim_r, dim_c) in enumerate(zip(r[7:10], c[7:10])):
+                if dim_r != dim_c:
+                    print(f"\033[1;33mwarning:\033[0m detected different dimensions on the {'x' if d == 0 else 'y' if d == 1 else 'z'} axis")
+                    print(f"    -> reference is \033[35m{int(dim_r)}\033[0m, but current is \033[35m{int(dim_c)}\033[0m")
+                    dimension_errors += 1
+            # Fail run if flag is enabled
+            if args.fail is True and dimension_errors != 0:
+                print(f"\033[1;31merror:\033[0m run failed because of {dimension_errors} incoherent dimension{'s' if dimension_errors > 1 else ''}")
+                exit(dimension_errors)
         
-        # Assert that result of the current version is still valid compared to reference
-        for j, (vr, vc) in enumerate(zip(r[:5], c[:5])):
-            if not math.isclose(vr, vc, rel_tol = args.precision):
-                print(f"\033[1;31mfailed:\033[0m coefficients \033[1m#{j}\033[0m at iteration \033[1m#{i}\033[0m are incoherent.\n",
-                      f"    -> reference is \033[34m{vr}\033[0m, but current is \033[34m{vc}\033[0m")
-                exit(-1)
+        # Assert that result of the current version is comparable to reference
+        # to the specified accuracy
+        for j, (val_r, val_c) in enumerate(zip(r[:5], c[:5])):
+            if not math.isclose(val_r, val_c, rel_tol = args.accuracy):
+                print(f"\033[1;33mwarning:\033[0m at iteration \033[1m#{i + 1}\033[0m coefficients \033[1m#{j}\033[0m are incoherent")
+                print(f"    -> reference is \033[35m{val_r}\033[0m, but current is \033[35m{val_c}\033[0m")
+                accuracy_errors += 1
 
         # Store the iteration time
-        ref_ms.append(r[6])
-        cur_ms.append(c[6])
+        ref_times.append(r[6])
+        cur_times.append(c[6])
+
+    # Fail run if flag is enabled
+    if args.fail is True and accuracy_errors != 0:
+        print(f"\033[1;31merror:\033[0m run failed because of {accuracy_errors} incoherent coefficient{'s' if accuracy_errors > 1 else ''}")
+        exit(accuracy_errors)
+    else:
+        print(f"{chr(10) if accuracy_errors + dimension_errors != 0 else ''}\033[1;32mSuccess!\033[0m Run passed all checks")
 
     # Compute average
-    ref_avg = functools.reduce(lambda sum, x: sum + x, ref_ms, 0.0) / iter
-    cur_avg = functools.reduce(lambda sum, x: sum + x, cur_ms, 0.0) / iter
-    # ref_avg = 0.0
-    # cur_avg = 0.0
-    # for r, c in zip(ref_ms, cur_ms):
-    #     ref_avg += r
-    #     cur_avg += c
-    # ref_avg /= iter
-    # cur_avg /= iter
+    real_iters = min(len(ref), len(cur))
+    ref_avg = functools.reduce(lambda sum, x: sum + x, ref_times, 0.0) / real_iters
+    cur_avg = functools.reduce(lambda sum, x: sum + x, cur_times, 0.0) / real_iters
     
-    print(f"Reference average: {ref_avg:03.2f} us")
-    print(f"  Current average: {cur_avg:03.2f} us")
-    print(f"\nSpeedup: \033[1;32m{ref_avg / cur_avg:.2f}x\033[0m")
+    print(f"Reference average: \033[1m{ref_avg:3.2f} μs\033[0m")
+    print(f"  Current average: \033[1m{cur_avg:3.2f} μs\033[0m")
+    print(f"\nAcceleration: \033[1;32m{ref_avg / cur_avg:.2f}x\033[0m")
+
+    exit(accuracy_errors)
 
 
 if __name__ == "__main__":
