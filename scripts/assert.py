@@ -79,6 +79,12 @@ def main():
     parser = build_parser()
     args = parser.parse_args()
 
+    # Get dimensions
+    dimx = args.dims[0]
+    dimy = args.dims[1]
+    dimz = args.dims[2]
+    iter = args.iters
+
     # Override default values if using a preset
     if args.preset == "small":
         dimx = dimy = dimz = 100
@@ -89,12 +95,6 @@ def main():
     elif args.preset == "big":
         dimx = dimy = dimz = 1000
         iter = 5
-
-    # Get dimensions
-    dimx = args.dims[0]
-    dimy = args.dims[1]
-    dimz = args.dims[2]
-    iter = args.iters
 
     print(f"Dimensions: \033[1;34m{dimx}\033[0mx\033[1;34m{dimy}\033[0mx\033[1;34m{dimz}\033[0m")
     print(f"Iterations: \033[1;34m{iter}\033[0m")
