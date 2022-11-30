@@ -87,25 +87,63 @@ auto one_iteration() -> void {
         for (uint64_t y = 0; y < DIMY; ++y) {
             #pragma omp simd
             for (uint64_t x = 0; x < DIMX; ++x) {
-                uint64_t xyz = DIMXYZ(x, y, z);
+                const uint64_t xyz = DIMXYZ(x, y, z);
+
+                const uint64_t yz = (z + order) * xyplane + (y + order) * MAXX + order;
+                const uint64_t xz = (z + order) * xyplane + x + order;
+                const uint64_t xy = (y + order) * MAXX + x + order;
                 matC[xyz] = matA[xyz] * matB[xyz];
 
-                for (uint64_t o = 1; o <= order; ++o) {
-                    const double exp = exponents[o - 1];
-                    const uint64_t xpo_yz = DIMXYZ(x + o, y, z);
-                    const uint64_t xmo_yz = DIMXYZ(x - o, y, z);
-                    const uint64_t x_ypo_z = DIMXYZ(x, y + o, z);
-                    const uint64_t x_ymo_z = DIMXYZ(x, y - o, z);
-                    const uint64_t xy_zpo = DIMXYZ(x, y, z + o);
-                    const uint64_t xy_zmo = DIMXYZ(x, y, z - o);
+                matC[xyz] += matA[x + 1 + yz] * matB[x + 1 + yz] * exponents[0];
+                matC[xyz] += matA[x + 2 + yz] * matB[x + 2 + yz] * exponents[1];
+                matC[xyz] += matA[x + 3 + yz] * matB[x + 3 + yz] * exponents[2];
+                matC[xyz] += matA[x + 4 + yz] * matB[x + 4 + yz] * exponents[3];
+                matC[xyz] += matA[x + 5 + yz] * matB[x + 5 + yz] * exponents[4];
+                matC[xyz] += matA[x + 6 + yz] * matB[x + 6 + yz] * exponents[5];
+                matC[xyz] += matA[x + 7 + yz] * matB[x + 7 + yz] * exponents[6];
+                matC[xyz] += matA[x + 8 + yz] * matB[x + 8 + yz] * exponents[7];
+                matC[xyz] += matA[x - 1 + yz] * matB[x - 1 + yz] * exponents[0];
+                matC[xyz] += matA[x - 2 + yz] * matB[x - 2 + yz] * exponents[1];
+                matC[xyz] += matA[x - 3 + yz] * matB[x - 3 + yz] * exponents[2];
+                matC[xyz] += matA[x - 4 + yz] * matB[x - 4 + yz] * exponents[3];
+                matC[xyz] += matA[x - 5 + yz] * matB[x - 5 + yz] * exponents[4];
+                matC[xyz] += matA[x - 6 + yz] * matB[x - 6 + yz] * exponents[5];
+                matC[xyz] += matA[x - 7 + yz] * matB[x - 7 + yz] * exponents[6];
+                matC[xyz] += matA[x - 8 + yz] * matB[x - 8 + yz] * exponents[7];
 
-                    matC[xyz] += matA[xpo_yz] * matB[xpo_yz] * exp;
-                    matC[xyz] += matA[xmo_yz] * matB[xmo_yz] * exp;
-                    matC[xyz] += matA[x_ypo_z] * matB[x_ypo_z] * exp;
-                    matC[xyz] += matA[x_ymo_z] * matB[x_ymo_z] * exp;
-                    matC[xyz] += matA[xy_zpo] * matB[xy_zpo] * exp;
-                    matC[xyz] += matA[xy_zmo] * matB[xy_zmo] * exp;
-                }
+                matC[xyz] += matA[((y + 1 + order) * MAXX) + xz] * matB[((y + 1 + order) * MAXX) + xz] * exponents[0];
+                matC[xyz] += matA[((y + 2 + order) * MAXX) + xz] * matB[((y + 2 + order) * MAXX) + xz] * exponents[1];
+                matC[xyz] += matA[((y + 3 + order) * MAXX) + xz] * matB[((y + 3 + order) * MAXX) + xz] * exponents[2];
+                matC[xyz] += matA[((y + 4 + order) * MAXX) + xz] * matB[((y + 4 + order) * MAXX) + xz] * exponents[3];
+                matC[xyz] += matA[((y + 5 + order) * MAXX) + xz] * matB[((y + 5 + order) * MAXX) + xz] * exponents[4];
+                matC[xyz] += matA[((y + 6 + order) * MAXX) + xz] * matB[((y + 6 + order) * MAXX) + xz] * exponents[5];
+                matC[xyz] += matA[((y + 7 + order) * MAXX) + xz] * matB[((y + 7 + order) * MAXX) + xz] * exponents[6];
+                matC[xyz] += matA[((y + 8 + order) * MAXX) + xz] * matB[((y + 8 + order) * MAXX) + xz] * exponents[7];
+                matC[xyz] += matA[((y - 1 + order) * MAXX) + xz] * matB[((y - 1 + order) * MAXX) + xz] * exponents[0];
+                matC[xyz] += matA[((y - 2 + order) * MAXX) + xz] * matB[((y - 2 + order) * MAXX) + xz] * exponents[1];
+                matC[xyz] += matA[((y - 3 + order) * MAXX) + xz] * matB[((y - 3 + order) * MAXX) + xz] * exponents[2];
+                matC[xyz] += matA[((y - 4 + order) * MAXX) + xz] * matB[((y - 4 + order) * MAXX) + xz] * exponents[3];
+                matC[xyz] += matA[((y - 5 + order) * MAXX) + xz] * matB[((y - 5 + order) * MAXX) + xz] * exponents[4];
+                matC[xyz] += matA[((y - 6 + order) * MAXX) + xz] * matB[((y - 6 + order) * MAXX) + xz] * exponents[5];
+                matC[xyz] += matA[((y - 7 + order) * MAXX) + xz] * matB[((y - 7 + order) * MAXX) + xz] * exponents[6];
+                matC[xyz] += matA[((y - 8 + order) * MAXX) + xz] * matB[((y - 8 + order) * MAXX) + xz] * exponents[7];
+
+                matC[xyz] += matA[((z + 1 + order) * xyplane) + xy] * matB[((z + 1 + order) * xyplane) + xy] * exponents[0];
+                matC[xyz] += matA[((z + 2 + order) * xyplane) + xy] * matB[((z + 2 + order) * xyplane) + xy] * exponents[1];
+                matC[xyz] += matA[((z + 3 + order) * xyplane) + xy] * matB[((z + 3 + order) * xyplane) + xy] * exponents[2];
+                matC[xyz] += matA[((z + 4 + order) * xyplane) + xy] * matB[((z + 4 + order) * xyplane) + xy] * exponents[3];
+                matC[xyz] += matA[((z + 5 + order) * xyplane) + xy] * matB[((z + 5 + order) * xyplane) + xy] * exponents[4];
+                matC[xyz] += matA[((z + 6 + order) * xyplane) + xy] * matB[((z + 6 + order) * xyplane) + xy] * exponents[5];
+                matC[xyz] += matA[((z + 7 + order) * xyplane) + xy] * matB[((z + 7 + order) * xyplane) + xy] * exponents[6];
+                matC[xyz] += matA[((z + 8 + order) * xyplane) + xy] * matB[((z + 8 + order) * xyplane) + xy] * exponents[7];
+                matC[xyz] += matA[((z - 1 + order) * xyplane) + xy] * matB[((z - 1 + order) * xyplane) + xy] * exponents[0];
+                matC[xyz] += matA[((z - 2 + order) * xyplane) + xy] * matB[((z - 2 + order) * xyplane) + xy] * exponents[1];
+                matC[xyz] += matA[((z - 3 + order) * xyplane) + xy] * matB[((z - 3 + order) * xyplane) + xy] * exponents[2];
+                matC[xyz] += matA[((z - 4 + order) * xyplane) + xy] * matB[((z - 4 + order) * xyplane) + xy] * exponents[3];
+                matC[xyz] += matA[((z - 5 + order) * xyplane) + xy] * matB[((z - 5 + order) * xyplane) + xy] * exponents[4];
+                matC[xyz] += matA[((z - 6 + order) * xyplane) + xy] * matB[((z - 6 + order) * xyplane) + xy] * exponents[5];
+                matC[xyz] += matA[((z - 7 + order) * xyplane) + xy] * matB[((z - 7 + order) * xyplane) + xy] * exponents[6];
+                matC[xyz] += matA[((z - 8 + order) * xyplane) + xy] * matB[((z - 8 + order) * xyplane) + xy] * exponents[7];
             }
         }
     }

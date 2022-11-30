@@ -5,7 +5,7 @@ COMMON_FLAGS := -Ofast -finline-functions -g -fno-omit-frame-pointer
 all: $(BIN)
 
 $(BIN): $(SRC)
-	g++ -march=native $(COMMON_FLAGS) -funroll-loops -fstrict-aliasing -fopenmp $? -o $(BIN)
+	g++ -march=native $(COMMON_FLAGS) -funroll-loops -ftree-vectorize -ftree-loop-vectorize -fopenmp $? -o $(BIN)
 
 llvm: $(SRC)
 	clang++ -march=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN)
