@@ -98,7 +98,7 @@ def main():
 
     print(f"Dimensions: \033[1;34m{dimx}\033[0mx\033[1;34m{dimy}\033[0mx\033[1;34m{dimz}\033[0m")
     print(f"Iterations: \033[1;34m{iter}\033[0m")
-    print(f"Accuracy:   \033[1;34m{args.accuracy}\033[0m\n")
+    print(f"  Accuracy: \033[1;34m{args.accuracy}\033[0m\n")
 
     # Get reference code output, either by re-running or by looking up existing
     # reference output files
@@ -162,8 +162,8 @@ def main():
                 accuracy_errors += 1
 
         # Store the iteration time
-        ref_times.append(r[6])
-        cur_times.append(c[6])
+        ref_times.append(r[5])
+        cur_times.append(c[5])
 
     # Fail run if flag is enabled
     if args.fail is True and accuracy_errors != 0:
@@ -177,8 +177,8 @@ def main():
     ref_avg = functools.reduce(lambda sum, x: sum + x, ref_times, 0.0) / real_iters
     cur_avg = functools.reduce(lambda sum, x: sum + x, cur_times, 0.0) / real_iters
     
-    print(f"Reference average: \033[1m{ref_avg:3.2f} μs\033[0m")
-    print(f"  Current average: \033[1m{cur_avg:3.2f} μs\033[0m")
+    print(f"Reference average: \033[1m{ref_avg / 1000.0:3.2f} ms\033[0m")
+    print(f"  Current average: \033[1m{cur_avg / 1000.0:3.2f} ms\033[0m")
     print(f"\nAcceleration: \033[1;32m{ref_avg / cur_avg:.2f}x\033[0m")
 
     exit(accuracy_errors)
