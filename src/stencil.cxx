@@ -17,9 +17,9 @@ auto one_iteration() -> void;
 
 // Pre-processor defines so users can override at compile-time
 #define iters 5
-#define DIMX 1000
-#define DIMY 1000
-#define DIMZ 1000
+#define DIMX 1000UL
+#define DIMY 1000UL
+#define DIMZ 1000UL
 
 // Constant expressions declarations
 constexpr double ONE_MILLION = 1000000.0;
@@ -87,7 +87,7 @@ auto init() -> void {
 }
 
 auto one_iteration() -> void {
-    #pragma omp parallel for schedule(dynamic) nowait
+    #pragma omp parallel for schedule(dynamic)
     for (uint64_t z = 0; z < DIMZ; ++z) {
         for (uint64_t y = 0; y < DIMY; ++y) {
             #pragma omp simd
