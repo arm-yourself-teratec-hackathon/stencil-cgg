@@ -199,7 +199,7 @@ auto one_iteration_odd() -> void {
                 const double exp7 = exponents[7];
 
                 // Get `matC[xyz]` into temporary
-                double matA_xyz = matC[xyz];
+                double matA_xyz = matA[xyz];
 
                 // Compute for current cell (o = 0)
                 matA_xyz = matC[xyz] * matB[xyz];
