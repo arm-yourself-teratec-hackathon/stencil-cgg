@@ -83,7 +83,7 @@ auto init() -> void {
 
     // Initialize the exponents array
     for (uint64_t o = 1; o <= order; ++o) {
-        exponents.push_back(1.0 / pow(17.0, o));
+        exponents[o - 1] = 1.0 / pow(17.0, o);
     }
 }
 
