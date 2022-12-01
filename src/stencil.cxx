@@ -16,10 +16,18 @@ auto one_iteration() -> void;
 [[nodiscard]] auto dml_micros() -> double;
 
 // Pre-processor defines so users can override at compile-time
-#define iters 5
-#define DIMX 1000UL
-#define DIMY 1000UL
-#define DIMZ 1000UL
+#ifndef iters
+#    define iters 5
+#endif
+#ifndef DIMX
+#    define DIMX 1000UL
+#endif
+#ifndef DIMY
+#    define DIMY 1000UL
+#endif
+#ifndef DIMZ
+#    define DIMZ 1000UL
+#endif
 
 // Constant expressions declarations
 constexpr double ONE_MILLION = 1000000.0;
@@ -34,6 +42,7 @@ constexpr uint64_t MATsize = MAXX * MAXY * MAXZ;
 // Dynamically allocate memory of size DIMX * DIMY * DIMZ + ghost region on 6 faces
 std::vector<double> matA(MATsize, 0.0);
 std::vector<double> matB(MATsize, 0.0);
+std::vector<double> matAB(MATsize, 0.0);
 std::vector<double> matC(MATsize, 0.0);
 std::vector<double> exponents;
 
@@ -92,6 +101,17 @@ auto one_iteration() -> void {
         for (uint64_t y = 0; y < DIMY; ++y) {
             #pragma omp simd
             for (uint64_t x = 0; x < DIMX; ++x) {
+                const uint64_t xyz = DIMXYZ(x, y, z);
+                matAB[xyz] = matA[xyz] * matB[xyz];
+            }
+        }
+    }
+
+    #pragma omp parallel for schedule(dynamic)
+    for (uint64_t z = 0; z < DIMZ; ++z) {
+        for (uint64_t y = 0; y < DIMY; ++y) {
+            #pragma omp simd
+            for (uint64_t x = 0; x < DIMX; ++x) {
                 // Pre-compute planes
                 const uint64_t xyz = DIMXYZ(x, y, z);
                 const uint64_t yz = (z + order) * xyplane + (y + order) * MAXX + order;
@@ -112,61 +132,61 @@ auto one_iteration() -> void {
                 double matC_xyz = matC[xyz];
 
                 // Compute for current cell (o = 0)
-                matC_xyz = matA[xyz] * matB[xyz];
+                matC_xyz = matAB[xyz];
 
                 // Compute all orders on the x axis (first positive direction, then negative one)
-                matC_xyz += matA[(x + 1) + yz] * matB[x + 1 + yz] * exp0;
-                matC_xyz += matA[(x + 2) + yz] * matB[x + 2 + yz] * exp1;
-                matC_xyz += matA[(x + 3) + yz] * matB[x + 3 + yz] * exp2;
-                matC_xyz += matA[(x + 4) + yz] * matB[x + 4 + yz] * exp3;
-                matC_xyz += matA[(x + 5) + yz] * matB[x + 5 + yz] * exp4;
-                matC_xyz += matA[(x + 6) + yz] * matB[x + 6 + yz] * exp5;
-                matC_xyz += matA[(x + 7) + yz] * matB[x + 7 + yz] * exp6;
-                matC_xyz += matA[(x + 8) + yz] * matB[x + 8 + yz] * exp7;
-                matC_xyz += matA[(x - 1) + yz] * matB[x - 1 + yz] * exp0;
-                matC_xyz += matA[(x - 2) + yz] * matB[x - 2 + yz] * exp1;
-                matC_xyz += matA[(x - 3) + yz] * matB[x - 3 + yz] * exp2;
-                matC_xyz += matA[(x - 4) + yz] * matB[x - 4 + yz] * exp3;
-                matC_xyz += matA[(x - 5) + yz] * matB[x - 5 + yz] * exp4;
-                matC_xyz += matA[(x - 6) + yz] * matB[x - 6 + yz] * exp5;
-                matC_xyz += matA[(x - 7) + yz] * matB[x - 7 + yz] * exp6;
-                matC_xyz += matA[(x - 8) + yz] * matB[x - 8 + yz] * exp7;
+                matC_xyz += matAB[x + 1 + yz] * exp0;
+                matC_xyz += matAB[x + 2 + yz] * exp1;
+                matC_xyz += matAB[x + 3 + yz] * exp2;
+                matC_xyz += matAB[x + 4 + yz] * exp3;
+                matC_xyz += matAB[x + 5 + yz] * exp4;
+                matC_xyz += matAB[x + 6 + yz] * exp5;
+                matC_xyz += matAB[x + 7 + yz] * exp6;
+                matC_xyz += matAB[x + 8 + yz] * exp7;
+                matC_xyz += matAB[x - 1 + yz] * exp0;
+                matC_xyz += matAB[x - 2 + yz] * exp1;
+                matC_xyz += matAB[x - 3 + yz] * exp2;
+                matC_xyz += matAB[x - 4 + yz] * exp3;
+                matC_xyz += matAB[x - 5 + yz] * exp4;
+                matC_xyz += matAB[x - 6 + yz] * exp5;
+                matC_xyz += matAB[x - 7 + yz] * exp6;
+                matC_xyz += matAB[x - 8 + yz] * exp7;
 
                 // Compute all orders on the y axis (first positive direction, then negative one)
-                matC_xyz += matA[((y + 1 + order) * MAXX) + xz] * matB[((y + 1 + order) * MAXX) + xz] * exp0;
-                matC_xyz += matA[((y + 2 + order) * MAXX) + xz] * matB[((y + 2 + order) * MAXX) + xz] * exp1;
-                matC_xyz += matA[((y + 3 + order) * MAXX) + xz] * matB[((y + 3 + order) * MAXX) + xz] * exp2;
-                matC_xyz += matA[((y + 4 + order) * MAXX) + xz] * matB[((y + 4 + order) * MAXX) + xz] * exp3;
-                matC_xyz += matA[((y + 5 + order) * MAXX) + xz] * matB[((y + 5 + order) * MAXX) + xz] * exp4;
-                matC_xyz += matA[((y + 6 + order) * MAXX) + xz] * matB[((y + 6 + order) * MAXX) + xz] * exp5;
-                matC_xyz += matA[((y + 7 + order) * MAXX) + xz] * matB[((y + 7 + order) * MAXX) + xz] * exp6;
-                matC_xyz += matA[((y + 8 + order) * MAXX) + xz] * matB[((y + 8 + order) * MAXX) + xz] * exp7;
-                matC_xyz += matA[((y - 1 + order) * MAXX) + xz] * matB[((y - 1 + order) * MAXX) + xz] * exp0;
-                matC_xyz += matA[((y - 2 + order) * MAXX) + xz] * matB[((y - 2 + order) * MAXX) + xz] * exp1;
-                matC_xyz += matA[((y - 3 + order) * MAXX) + xz] * matB[((y - 3 + order) * MAXX) + xz] * exp2;
-                matC_xyz += matA[((y - 4 + order) * MAXX) + xz] * matB[((y - 4 + order) * MAXX) + xz] * exp3;
-                matC_xyz += matA[((y - 5 + order) * MAXX) + xz] * matB[((y - 5 + order) * MAXX) + xz] * exp4;
-                matC_xyz += matA[((y - 6 + order) * MAXX) + xz] * matB[((y - 6 + order) * MAXX) + xz] * exp5;
-                matC_xyz += matA[((y - 7 + order) * MAXX) + xz] * matB[((y - 7 + order) * MAXX) + xz] * exp6;
-                matC_xyz += matA[((y - 8 + order) * MAXX) + xz] * matB[((y - 8 + order) * MAXX) + xz] * exp7;
+                matC_xyz += matAB[((y + 1 + order) * MAXX) + xz] * exp0;
+                matC_xyz += matAB[((y + 2 + order) * MAXX) + xz] * exp1;
+                matC_xyz += matAB[((y + 3 + order) * MAXX) + xz] * exp2;
+                matC_xyz += matAB[((y + 4 + order) * MAXX) + xz] * exp3;
+                matC_xyz += matAB[((y + 5 + order) * MAXX) + xz] * exp4;
+                matC_xyz += matAB[((y + 6 + order) * MAXX) + xz] * exp5;
+                matC_xyz += matAB[((y + 7 + order) * MAXX) + xz] * exp6;
+                matC_xyz += matAB[((y + 8 + order) * MAXX) + xz] * exp7;
+                matC_xyz += matAB[((y - 1 + order) * MAXX) + xz] * exp0;
+                matC_xyz += matAB[((y - 2 + order) * MAXX) + xz] * exp1;
+                matC_xyz += matAB[((y - 3 + order) * MAXX) + xz] * exp2;
+                matC_xyz += matAB[((y - 4 + order) * MAXX) + xz] * exp3;
+                matC_xyz += matAB[((y - 5 + order) * MAXX) + xz] * exp4;
+                matC_xyz += matAB[((y - 6 + order) * MAXX) + xz] * exp5;
+                matC_xyz += matAB[((y - 7 + order) * MAXX) + xz] * exp6;
+                matC_xyz += matAB[((y - 8 + order) * MAXX) + xz] * exp7;
 
                 // Compute all orders on the z axis (first positive direction, then negative one)
-                matC_xyz += matA[((z + 1 + order) * xyplane) + xy] * matB[((z + 1 + order) * xyplane) + xy] * exp0;
-                matC_xyz += matA[((z + 2 + order) * xyplane) + xy] * matB[((z + 2 + order) * xyplane) + xy] * exp1;
-                matC_xyz += matA[((z + 3 + order) * xyplane) + xy] * matB[((z + 3 + order) * xyplane) + xy] * exp2;
-                matC_xyz += matA[((z + 4 + order) * xyplane) + xy] * matB[((z + 4 + order) * xyplane) + xy] * exp3;
-                matC_xyz += matA[((z + 5 + order) * xyplane) + xy] * matB[((z + 5 + order) * xyplane) + xy] * exp4;
-                matC_xyz += matA[((z + 6 + order) * xyplane) + xy] * matB[((z + 6 + order) * xyplane) + xy] * exp5;
-                matC_xyz += matA[((z + 7 + order) * xyplane) + xy] * matB[((z + 7 + order) * xyplane) + xy] * exp6;
-                matC_xyz += matA[((z + 8 + order) * xyplane) + xy] * matB[((z + 8 + order) * xyplane) + xy] * exp7;
-                matC_xyz += matA[((z - 1 + order) * xyplane) + xy] * matB[((z - 1 + order) * xyplane) + xy] * exp0;
-                matC_xyz += matA[((z - 2 + order) * xyplane) + xy] * matB[((z - 2 + order) * xyplane) + xy] * exp1;
-                matC_xyz += matA[((z - 3 + order) * xyplane) + xy] * matB[((z - 3 + order) * xyplane) + xy] * exp2;
-                matC_xyz += matA[((z - 4 + order) * xyplane) + xy] * matB[((z - 4 + order) * xyplane) + xy] * exp3;
-                matC_xyz += matA[((z - 5 + order) * xyplane) + xy] * matB[((z - 5 + order) * xyplane) + xy] * exp4;
-                matC_xyz += matA[((z - 6 + order) * xyplane) + xy] * matB[((z - 6 + order) * xyplane) + xy] * exp5;
-                matC_xyz += matA[((z - 7 + order) * xyplane) + xy] * matB[((z - 7 + order) * xyplane) + xy] * exp6;
-                matC_xyz += matA[((z - 8 + order) * xyplane) + xy] * matB[((z - 8 + order) * xyplane) + xy] * exp7;
+                matC_xyz += matAB[((z + 1 + order) * xyplane) + xy] * exp0;
+                matC_xyz += matAB[((z + 2 + order) * xyplane) + xy] * exp1;
+                matC_xyz += matAB[((z + 3 + order) * xyplane) + xy] * exp2;
+                matC_xyz += matAB[((z + 4 + order) * xyplane) + xy] * exp3;
+                matC_xyz += matAB[((z + 5 + order) * xyplane) + xy] * exp4;
+                matC_xyz += matAB[((z + 6 + order) * xyplane) + xy] * exp5;
+                matC_xyz += matAB[((z + 7 + order) * xyplane) + xy] * exp6;
+                matC_xyz += matAB[((z + 8 + order) * xyplane) + xy] * exp7;
+                matC_xyz += matAB[((z - 1 + order) * xyplane) + xy] * exp0;
+                matC_xyz += matAB[((z - 2 + order) * xyplane) + xy] * exp1;
+                matC_xyz += matAB[((z - 3 + order) * xyplane) + xy] * exp2;
+                matC_xyz += matAB[((z - 4 + order) * xyplane) + xy] * exp3;
+                matC_xyz += matAB[((z - 5 + order) * xyplane) + xy] * exp4;
+                matC_xyz += matAB[((z - 6 + order) * xyplane) + xy] * exp5;
+                matC_xyz += matAB[((z - 7 + order) * xyplane) + xy] * exp6;
+                matC_xyz += matAB[((z - 8 + order) * xyplane) + xy] * exp7;
 
                 matC[xyz] = matC_xyz;
             }
@@ -184,6 +204,7 @@ auto one_iteration() -> void {
         one_iteration();
         double t2 = dml_micros();
 
+        // Avoid copying C into A with a simple pointer swap (zero-cost)
         matC.swap(matA);
         printf("_0_ ");
         for (uint64_t j = 0; j < 5; ++j) {
