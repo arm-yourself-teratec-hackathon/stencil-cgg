@@ -1,3 +1,4 @@
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <cstdint>
@@ -31,10 +32,11 @@ constexpr uint64_t MATsize = MAXX * MAXY * MAXZ;
 // uint64_t DIMX, DIMY, DIMZ, iters;
 // uint64_t MAXX, MAXY, MAXZ;
 // uint64_t xyplane, MATsize;
-std::vector<double> matA;
-std::vector<double> matB;
-std::vector<double> matC;
-std::vector<double> exponents;
+// Dynamically allocate memory of size DIMX * DIMY * DIMZ + ghost region on 6 faces
+std::vector<double> matA(MATsize, 0.0);
+std::vector<double> matB(MATsize, 0.0);
+std::vector<double> matC(MATsize, 0.0);
+std::array<double, order> exponents = {};
 
 /// Get current time in microseconds.
 [[nodiscard]] auto dml_micros() -> double {
@@ -61,11 +63,6 @@ std::vector<double> exponents;
 ///
 /// The A and C matrices are initialized to zero, with A the input and C the output.
 auto init() -> void {
-    // Dynamically allocate memory of size DIMX * DIMY * DIMZ + ghost region on 6 faces
-    matA = std::vector<double>(MATsize, 0.0);
-    matB = std::vector<double>(MATsize, 0.0);
-    matC = std::vector<double>(MATsize, 0.0);
-
     // Center and edges initialization, B is a constant stencil for the run
     for (uint64_t z = 0; z < MAXZ; ++z) {
         for (uint64_t y = 0; y < MAXY; ++y) {
