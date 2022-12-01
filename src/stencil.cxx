@@ -93,9 +93,10 @@ auto one_iteration() -> void {
     for (uint64_t z = 0; z < DIMZ; z += BLOCK_SIZE) {
         for (uint64_t y = 0; y < DIMY; y += BLOCK_SIZE) {
             for (uint64_t x = 0; x < DIMX; x += BLOCK_SIZE) {
-                for (uint64_t zz = z; zz < z + BLOCK_SIZE && zz < DIMZ; ++zz) {
-                    for (uint64_t yy = y; yy < y + BLOCK_SIZE && yy < DIMY; ++yy) {
-                        for (uint64_t xx = x; xx < x + BLOCK_SIZE && xx < DIMX; ++xx) {
+                for (uint64_t zz = z; zz < z + BLOCK_SIZE; ++zz) {
+                    for (uint64_t yy = y; yy < y + BLOCK_SIZE; ++yy) {
+                        #pragma omp simd
+                        for (uint64_t xx = x; xx < x + BLOCK_SIZE; ++xx) {
                             // Pre-compute planes
                             const uint64_t xyz = DIMXYZ(xx, yy, zz);
                             const uint64_t yz = (zz + order) * xyplane + (yy + order) * MAXX + order;
