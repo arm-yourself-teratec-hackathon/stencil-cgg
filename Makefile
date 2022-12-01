@@ -11,7 +11,7 @@ llvm: $(SRC)
 	clang++ -march=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN)
 
 arm: $(SRC)
-	armclang++ -mcpu=native $(COMMON_FLAGS) -funroll-loops -fstrict-aliasing -fopenmp -armpl $? -o $(BIN)
+	armclang++ -mcpu=native $(COMMON_FLAGS) -funroll-loops -ftree-vectorize -fopenmp -armpl $? -o $(BIN)
 
 nvc: $(SRC)
 	nvc++ -march=neoverse-v1 $(COMMON_FLAGS) -mp $? -o $(BIN)
