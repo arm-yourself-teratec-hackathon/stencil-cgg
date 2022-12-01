@@ -15,13 +15,22 @@ auto one_iteration() -> void;
 [[nodiscard]] auto dml_micros() -> double;
 
 // Constant expressions declarations
-constexpr uint64_t order = 8;
 constexpr double ONE_MILLION = 1000000.0;
+constexpr uint64_t order = 8;
+constexpr uint64_t iters = 5;
+constexpr uint64_t DIMX = 1000;
+constexpr uint64_t DIMY = 1000;
+constexpr uint64_t DIMZ = 1000;
+constexpr uint64_t MAXX = DIMX + 2 * order;
+constexpr uint64_t MAXY = DIMY + 2 * order;
+constexpr uint64_t MAXZ = DIMZ + 2 * order;
+constexpr uint64_t xyplane = MAXX * MAXY;
+constexpr uint64_t MATsize = MAXX * MAXY * MAXZ;
 
 // Global variables declarations
-uint64_t DIMX, DIMY, DIMZ, iters;
-uint64_t MAXX, MAXY, MAXZ;
-uint64_t xyplane, MATsize;
+// uint64_t DIMX, DIMY, DIMZ, iters;
+// uint64_t MAXX, MAXY, MAXZ;
+// uint64_t xyplane, MATsize;
 std::vector<double> matA;
 std::vector<double> matB;
 std::vector<double> matC;
