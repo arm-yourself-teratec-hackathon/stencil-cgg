@@ -183,15 +183,15 @@ auto one_iteration() -> void {
 
 [[nodiscard]] auto main(int32_t argc, char** argv) -> int32_t {
     try {
-        DIMX = std::stoi(argv[1]);
-        DIMY = std::stoi(argv[2]);
-        DIMZ = std::stoi(argv[3]);
-        iters = std::stoi(argv[4]);
-        MAXX = DIMX + 2 * order;
-        MAXY = DIMY + 2 * order;
-        MAXZ = DIMZ + 2 * order;
-        xyplane = MAXX * MAXY;
-        MATsize = MAXX * MAXY * MAXZ;
+        // DIMX = std::stoi(argv[1]);
+        // DIMY = std::stoi(argv[2]);
+        // DIMZ = std::stoi(argv[3]);
+        // iters = std::stoi(argv[4]);
+        // MAXX = DIMX + 2 * order;
+        // MAXY = DIMY + 2 * order;
+        // MAXZ = DIMZ + 2 * order;
+        // xyplane = MAXX * MAXY;
+        // MATsize = MAXX * MAXY * MAXZ;
     } catch (...) {
         std::cout << argv[0] << " siseX sizeY sizeZ iters" << std::endl;
         return -1;
