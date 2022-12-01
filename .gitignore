@@ -7,3 +7,4 @@ stencil
 cfg.lua
 *.tar
 *.out
+*.asm
