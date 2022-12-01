@@ -8,7 +8,7 @@
 #include <vector>
 
 // Functions forward-declarations
-[[nodiscard]] auto main(int32_t argc, char** argv) -> int32_t;
+[[nodiscard]] auto main() -> int32_t;
 auto init() -> void;
 auto one_iteration() -> void;
 [[nodiscard]] auto DIMXYZ(uint64_t x, uint64_t y, uint64_t z) -> uint64_t;
@@ -38,7 +38,7 @@ std::vector<double> matC(MATsize, 0.0);
 std::vector<double> exponents;
 
 /// Get current time in microseconds.
-[[nodiscard]] auto dml_micros() -> double {
+[[nodiscard]] inline auto dml_micros() -> double {
     static struct timeval tv;
     static struct timezone tz;
     gettimeofday(&tv, &tz);
@@ -46,13 +46,13 @@ std::vector<double> exponents;
 }
 
 /// Returns an offset in the center of a matrix of linear dimensions [0:DIM-1].
-[[nodiscard]] auto DIMXYZ(uint64_t x, uint64_t y, uint64_t z) -> uint64_t {
+[[nodiscard]] inline auto DIMXYZ(uint64_t x, uint64_t y, uint64_t z) -> uint64_t {
     return ((z + order) * xyplane + (y + order) * MAXX + x + order);
 }
 
 /// Returns an offset in a matrix of linear dimensions [-order:DIM+order-1] but
 /// in indices of [0:DIM+order*2-1].
-[[nodiscard]] auto MATXYZ(uint64_t x, uint64_t y, uint64_t z) -> uint64_t {
+[[nodiscard]] inline auto MATXYZ(uint64_t x, uint64_t y, uint64_t z) -> uint64_t {
     return (x + y * MAXX + z * xyplane);
 }
 
@@ -87,7 +87,7 @@ auto init() -> void {
 }
 
 auto one_iteration() -> void {
-    #pragma omp parallel for schedule(guided)
+    #pragma omp parallel for schedule(dynamic) nowait
     for (uint64_t z = 0; z < DIMZ; ++z) {
         for (uint64_t y = 0; y < DIMY; ++y) {
             #pragma omp simd
@@ -174,21 +174,8 @@ auto one_iteration() -> void {
     }
 }
 
-[[nodiscard]] auto main(int32_t argc, char** argv) -> int32_t {
-    try {
-        // DIMX = std::stoi(argv[1]);
-        // DIMY = std::stoi(argv[2]);
-        // DIMZ = std::stoi(argv[3]);
-        // iters = std::stoi(argv[4]);
-        // MAXX = DIMX + 2 * order;
-        // MAXY = DIMY + 2 * order;
-        // MAXZ = DIMZ + 2 * order;
-        // xyplane = MAXX * MAXY;
-        // MATsize = MAXX * MAXY * MAXZ;
-    } catch (...) {
-        std::cout << argv[0] << " siseX sizeY sizeZ iters" << std::endl;
-        return -1;
-    }
+[[nodiscard]] auto main() -> int32_t {
+    // No arguments as we defined them with the pre-processor
 
     init();
     for (uint64_t i = 0; i < iters; ++i) {
