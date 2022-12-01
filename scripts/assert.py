@@ -36,7 +36,7 @@ def build_parser() -> argparse.ArgumentParser:
                         dest = "rerun",
                         help = "re-run reference code (uses specified dimensions, default ones otherwise)")
     parser.add_argument("-p", "--preset",
-                        choices = ["small", "medium", "big"],
+                        choices = ["small", "medium", "big", "official"],
                         default = None,
                         dest = "preset",
                         help = "specify a preset run to compare against: small (100x100x100), medium (500x500x500) or big (1000x1000x1000)"),
@@ -92,7 +92,7 @@ def main():
     elif args.preset == "medium":
         dimx = dimy = dimz = 500
         iter = 5
-    elif args.preset == "big":
+    elif args.preset == "big" or args.preset == "official":
         dimx = dimy = dimz = 1000
         iter = 5
 
@@ -112,6 +112,8 @@ def main():
             ref = parse_output("ref/ref500.out")
         elif args.preset == "big":
             ref = parse_output("ref/ref1000.out")
+        elif args.preset == "official":
+            ref = parse_output("ref/ref_official.out")
         else:
             ref = parse_output("ref/ref.out")
     
@@ -186,3 +188,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
