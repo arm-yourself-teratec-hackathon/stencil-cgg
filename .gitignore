@@ -1,6 +1,5 @@
 # Directories to ignore
 maqao*/
-ref/
 
 # Files to ignore
 stencil
