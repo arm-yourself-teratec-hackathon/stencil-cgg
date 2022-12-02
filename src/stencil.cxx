@@ -71,19 +71,26 @@ std::vector<double> exponents;
 /// The A and C matrices are initialized to zero, with A the input and C the output.
 auto init() -> void {
     // Center and edges initialization, B is a constant stencil for the run
-    for (uint64_t z = 0; z < MAXZ; ++z) {
-        for (uint64_t y = 0; y < MAXY; ++y) {
-            for (uint64_t x = 0; x < MAXX; ++x) {
-                matB[MATXYZ(x, y, z)] = sin(z * cos(x + 0.311) * cos(y + 0.817) + 0.613);
+    #pragma omp parallel
+    {
+        #pragma omp for
+        for (uint64_t z = 0; z < MAXZ; ++z) {
+            for (uint64_t y = 0; y < MAXY; ++y) {
+                #pragma omp simd
+                for (uint64_t x = 0; x < MAXX; ++x) {
+                    matB[MATXYZ(x, y, z)] = sin(z * cos(x + 0.311) * cos(y + 0.817) + 0.613);
+                }
             }
         }
-    }
 
-    // Initialize the center of A, which is the data matrix
-    for (uint64_t z = 0; z < DIMZ; ++z) {
-        for (uint64_t y = 0; y < DIMY; ++y) {
-            for (uint64_t x = 0; x < DIMX; ++x) {
-                matA[DIMXYZ(x, y, z)] = 1.0;
+        // Initialize the center of A, which is the data matrix
+        #pragma omp for
+        for (uint64_t z = 0; z < DIMZ; ++z) {
+            for (uint64_t y = 0; y < DIMY; ++y) {
+                #pragma omp simd
+                for (uint64_t x = 0; x < DIMX; ++x) {
+                    matA[DIMXYZ(x, y, z)] = 1.0;
+                }
             }
         }
     }
@@ -108,6 +115,16 @@ auto one_iteration() -> void {
             }
         }
 
+        // Ensure compiler pre-loads exponents with `ld1rd` in SVE regs only once
+        const double exp0 = exponents[0];
+        const double exp1 = exponents[1];
+        const double exp2 = exponents[2];
+        const double exp3 = exponents[3];
+        const double exp4 = exponents[4];
+        const double exp5 = exponents[5];
+        const double exp6 = exponents[6];
+        const double exp7 = exponents[7];
+
         #pragma omp for schedule(dynamic)
         for (uint64_t z = 0; z < DIMZ; ++z) {
             for (uint64_t y = 0; y < DIMY; ++y) {
@@ -119,16 +136,6 @@ auto one_iteration() -> void {
                     const uint64_t xyz = DIMXYZ(x, y, z);
                     const uint64_t xz = (z + order) * xyplane + x + order;
                     const uint64_t xy = (y + order) * MAXX + x + order;
-
-                    // Ensure compiler pre-loads exponents with `ld1rd` in SVE regs only once
-                    const double exp0 = exponents[0];
-                    const double exp1 = exponents[1];
-                    const double exp2 = exponents[2];
-                    const double exp3 = exponents[3];
-                    const double exp4 = exponents[4];
-                    const double exp5 = exponents[5];
-                    const double exp6 = exponents[6];
-                    const double exp7 = exponents[7];
 
                     // Get `matC[xyz]` into temporary
                     double matC_xyz = matC[xyz];
