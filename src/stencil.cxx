@@ -111,11 +111,12 @@ auto one_iteration() -> void {
         #pragma omp for schedule(dynamic)
         for (uint64_t z = 0; z < DIMZ; ++z) {
             for (uint64_t y = 0; y < DIMY; ++y) {
+                const uint64_t yz = (z + order) * xyplane + (y + order) * MAXX + order;
+
                 #pragma omp simd
                 for (uint64_t x = 0; x < DIMX; ++x) {
                     // Pre-compute planes
                     const uint64_t xyz = DIMXYZ(x, y, z);
-                    const uint64_t yz = (z + order) * xyplane + (y + order) * MAXX + order;
                     const uint64_t xz = (z + order) * xyplane + x + order;
                     const uint64_t xy = (y + order) * MAXX + x + order;
 
