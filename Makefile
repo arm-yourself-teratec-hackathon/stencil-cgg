@@ -2,20 +2,21 @@ SRC := src/stencil.cxx
 BIN := stencil
 COMMON_FLAGS := -Ofast -finline-functions -g -fno-omit-frame-pointer
 LDFLAGS := -larmpl
+OPTION := 
 
 all: $(BIN)
 
 $(BIN): $(SRC)
-	g++ -march=native $(COMMON_FLAGS) -funroll-loops -ftree-vectorize -ftree-loop-vectorize -fopenmp $? -o $(BIN) $(LDFLAGS)
+	g++ -march=native $(COMMON_FLAGS) -funroll-loops -ftree-vectorize -ftree-loop-vectorize -fopenmp $? -o $(BIN) $(LDFLAGS) $(OPTION)
 
 llvm: $(SRC)
-	clang++ -march=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN) $(LDFLAGS)
+	clang++ -march=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN) $(LDFLAGS) $(OPTION)
 
 arm: $(SRC)
-	armclang++ -mcpu=native $(COMMON_FLAGS) -funroll-loops -ftree-vectorize -fopenmp -armpl $? -o $(BIN) $(LDFLAGS)
+	armclang++ -mcpu=native $(COMMON_FLAGS) -funroll-loops -ftree-vectorize -fopenmp -armpl $? -o $(BIN) $(LDFLAGS) $(OPTION)
 
 nvc: $(SRC)
-	nvc++ -march=neoverse-v1 $(COMMON_FLAGS) -mp $? -o $(BIN) $(LDFLAGS)
+	nvc++ -march=neoverse-v1 $(COMMON_FLAGS) -mp $? -o $(BIN) $(LDFLAGS) $(OPTION)
 
 intel: $(SRC)
 	icpx -xHost $(COMMON_FLAGS) -mavx -funroll-loops -qopenmp -qmkl $? -o $(BIN)
