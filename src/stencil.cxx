@@ -97,7 +97,7 @@ auto init() -> void {
 auto one_iteration() -> void {
     #pragma omp parallel
     {
-        #pragma omp for schedule(static)
+        #pragma omp for schedule(dynamic)
         for (uint64_t z = 0; z < DIMZ; ++z) {
             for (uint64_t y = 0; y < DIMY; ++y) {
                 #pragma omp simd
