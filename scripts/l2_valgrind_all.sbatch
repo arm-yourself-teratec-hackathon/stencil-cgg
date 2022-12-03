@@ -13,7 +13,7 @@ fn="xl2/noblocking"
 make -B stencil2 OPTION="-DNOBS -DDIMM=1000"
 ./stencil2 > $fn.out 2>&1
 ./stencil2 > $fn.out 2>&1
-python3 scripts/assert.py -p small -o $fn.out > $fn.ass 2>&1
+python3 scripts/assert.py -p big -o $fn.out > $fn.ass 2>&1
 valgrind --tool=cachegrind ./stencil2 > $fn.valgrind 2>&1
 
 for i in $(seq 2 2 100); do
@@ -21,21 +21,21 @@ for i in $(seq 2 2 100); do
     make -B stencil2 OPTION="-DBSZ=$i -DBSY=$i -DDIMM=1000"
     ./stencil2 > $fn.out 2>&1
     ./stencil2 > $fn.out 2>&1
-    python3 scripts/assert.py -p small -o $fn.out > $fn.ass 2>&1
+    python3 scripts/assert.py -p big -o $fn.out > $fn.ass 2>&1
     valgrind --tool=cachegrind ./stencil2 > $fn.valgrind 2>&1
 
     fn="xl2/0-$i-$i"
     make -B stencil2 OPTION="-DBSX=$i -DBSY=$i -DDIMM=1000"
     ./stencil2 > $fn.out 2>&1
     ./stencil2 > $fn.out 2>&1
-    python3 scripts/assert.py -p small -o $fn.out > $fn.ass 2>&1
+    python3 scripts/assert.py -p big -o $fn.out > $fn.ass 2>&1
     valgrind --tool=cachegrind ./stencil2 > $fn.valgrind 2>&1
 
     fn="xl2/$i-$i-$i"
     make -B stencil2 OPTION="-DBSZ=$i -DBSX=$i -DBSY=$i -DDIMM=1000"
     ./stencil2 > $fn.out 2>&1
     ./stencil2 > $fn.out 2>&1
-    python3 scripts/assert.py -p small -o $fn.out > $fn.ass 2>&1
+    python3 scripts/assert.py -p big -o $fn.out > $fn.ass 2>&1
     valgrind --tool=cachegrind ./stencil2 > $fn.valgrind 2>&1
 done
 
