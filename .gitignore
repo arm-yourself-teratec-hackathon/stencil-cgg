@@ -4,6 +4,6 @@ ref/
 
 # Files to ignore
 stencil
-cfg.lua
+maqao_conf.lua
 *.tar
 *.out
