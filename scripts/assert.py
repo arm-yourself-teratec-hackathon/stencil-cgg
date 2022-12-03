@@ -57,7 +57,7 @@ def colorstrip(data: str) -> str:
     return data.replace('\x1b[1m', '').replace('\x1b[0m', '')
 
 
-# Run command 
+# Run command
 def run(command: str) -> list:
     bin = command.split()[0]
     if not os.path.exists(bin):
@@ -65,14 +65,22 @@ def run(command: str) -> list:
     run = os.popen(command)
     res = run.read().strip('\n')
     run.close()
-    return colorstrip(res).split('\n')
+
+    cleaned_contents = []
+    for line in colorstrip(res).split('\n'):
+        if line.startswith("_0_"):
+            cleaned_contents.append(line)
+    return cleaned_contents
 
 
 def parse_output(file: str) -> list:
     with open(file, "r") as f:
         contents = f.read().strip('\n')
-        contents = colorstrip(contents).split('\n')
-    return contents
+        cleaned_contents = []
+        for line in colorstrip(contents).split('\n'):
+            if line.startswith("_0_"):
+                cleaned_contents.append(line)
+    return cleaned_contents
 
 
 def main():
@@ -116,7 +124,7 @@ def main():
             ref = parse_output("ref/ref_official.out")
         else:
             ref = parse_output("ref/ref.out")
-    
+
     if args.output is not None:
         if os.path.exists(args.output) and os.path.isfile(args.output):
             cur = parse_output(args.output)
@@ -127,7 +135,6 @@ def main():
         sys.stdout.flush()
         cur = run(f"./stencil {dimx} {dimy} {dimz} {iter}")
         print("done\n")
-
 
     accuracy_errors = 0
     dimension_errors = 0
@@ -154,7 +161,7 @@ def main():
             if args.fail is True and dimension_errors != 0:
                 print(f"\033[1;31merror:\033[0m run failed because of {dimension_errors} incoherent dimension{'s' if dimension_errors > 1 else ''}")
                 exit(dimension_errors)
-        
+
         # Assert that result of the current version is comparable to reference
         # to the specified accuracy
         for j, (val_r, val_c) in enumerate(zip(r[:5], c[:5])):
@@ -178,7 +185,7 @@ def main():
     real_iters = min(len(ref), len(cur))
     ref_avg = functools.reduce(lambda sum, x: sum + x, ref_times, 0.0) / real_iters
     cur_avg = functools.reduce(lambda sum, x: sum + x, cur_times, 0.0) / real_iters
-    
+
     print(f"Reference average: \033[1m{ref_avg / 1000.0:3.2f} ms\033[0m")
     print(f"  Current average: \033[1m{cur_avg / 1000.0:3.2f} ms\033[0m")
     print(f"\nAcceleration: \033[1;32m{ref_avg / cur_avg:.2f}x\033[0m")
@@ -188,4 +195,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
