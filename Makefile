@@ -1,13 +1,19 @@
 SRC := src/stencil.cxx
+SRC2 := src/stencil2.cxx
+
 BIN := stencil
+BIN2 := stencil2
 COMMON_FLAGS := -Ofast -finline-functions -g -fno-omit-frame-pointer
 LDFLAGS := -larmpl
 OPTION := 
 
-all: $(BIN)
+all: $(BIN) $(BIN2)
 
 $(BIN): $(SRC)
 	g++ -march=native $(COMMON_FLAGS) -funroll-loops -ftree-vectorize -ftree-loop-vectorize -fopenmp $? -o $(BIN) $(LDFLAGS) $(OPTION)
+
+$(BIN2): $(SRC2)
+	g++ -march=native $(COMMON_FLAGS) -funroll-loops -ftree-vectorize -ftree-loop-vectorize -fopenmp $? -o $(BIN2) $(LDFLAGS) $(OPTION)
 
 llvm: $(SRC)
 	clang++ -march=native $(COMMON_FLAGS) -funroll-loops -fopenmp $? -o $(BIN) $(LDFLAGS) $(OPTION)
@@ -31,4 +37,4 @@ prof:
 	@maqao oneview -R1 --config=cfg.lua -xp=maqao_arm --replace
 
 clean:
-	@rm -rf $(BIN) slurm-jobs/* maqao-arm*
+	@rm -rf $(BIN) $(BIN2) maqao-arm*
