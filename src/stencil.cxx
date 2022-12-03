@@ -20,7 +20,9 @@ auto one_iteration() -> void;
 
 // for (uint64_t z = bz; z < (bz + 64 > DIMZ) ? DIMZ : bz + 64; ++z) {
 // for (uint64_t x = bx; x < check_boundaries(bx + BSX, DIMX); ++x) {
-#define check_boundaries(next_max_iter, max_dim) (next_max_iter < max_dim) * next_max_iter + (next_max_iter >= max_dim) * max_dim
+#define check_boundaries(next_max_iter, max_dim)                                                   \
+    (unsigned long)(next_max_iter < max_dim) * next_max_iter +                                     \
+        (unsigned long)(next_max_iter >= max_dim) * max_dim
 
 #ifndef iters
     #define iters 5
@@ -68,13 +70,13 @@ std::vector<double> exponents;
 }
 
 /// Returns an offset in the center of a matrix of linear dimensions [0:DIM-1].
-[[nodiscard]] inline auto DIMXYZ(uint64_t x, uint64_t y, uint64_t z) -> uint64_t {
+[[nodiscard]] inline auto DIMXYZ(const uint64_t x, const uint64_t y, const uint64_t z) -> uint64_t {
     return ((z + order) * xyplane + (y + order) * MAXX + x + order);
 }
 
 /// Returns an offset in a matrix of linear dimensions [-order:DIM+order-1] but
 /// in indices of [0:DIM+order*2-1].
-[[nodiscard]] inline auto MATXYZ(uint64_t x, uint64_t y, uint64_t z) -> uint64_t {
+[[nodiscard]] inline auto MATXYZ(const uint64_t x, const uint64_t y, const uint64_t z) -> uint64_t {
     return (x + y * MAXX + z * xyplane);
 }
 
