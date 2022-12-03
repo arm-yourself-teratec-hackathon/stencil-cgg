@@ -105,10 +105,10 @@ auto one_iteration() -> void {
     #pragma omp parallel
     {
         #pragma omp for schedule(dynamic)
-        for (uint64_t z = DIMZ; z >= 0; --z) {
-            for (uint64_t y = DIMY; y >= 0; --y) {
+        for (uint64_t z = 0; z < DIMZ; ++z) {
+            for (uint64_t y = 0; y < DIMY; ++y) {
                 #pragma omp simd
-                for (uint64_t x = DIMX; x >= 0; --x) {
+                for (uint64_t x = 0; x < DIMX; ++x) {
                     const uint64_t xyz = DIMXYZ(x, y, z);
                     matAB[xyz] = matA[xyz] * matB[xyz];
                 }
