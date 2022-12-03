@@ -36,9 +36,6 @@ auto one_iteration() -> void;
     #define DIMZ (unsigned long)DIMM
 #endif
 
-// #define BSZ 64UL
-// #define BSY 64UL
-
 #if defined(BSX) || defined(BSY) || defined(BSZ)
 #else
     #define NOBS
@@ -160,13 +157,25 @@ auto one_iteration() -> void {
 #else
 
     #pragma omp parallel for schedule(dynamic)
+    #ifdef BSZ
     for (uint64_t bz = 0; bz < DIMZ; bz += BSZ) {
+    #endif
+        #ifdef BSY
         for (uint64_t by = 0; by < DIMY; by += BSY) {
+        #endif
             #ifdef BSX
             for (uint64_t bx = 0; bx < DIMX; bx += BSX) {
             #endif
+                #ifdef BSZ
                 for (uint64_t z = bz; z < check_boundaries(bz + BSZ, DIMZ); ++z) {
+                #else
+                for (uint64_t z = 0; z < DIMZ; ++z) {
+                #endif
+                    #ifdef BSY
                     for (uint64_t y = by; y < check_boundaries(by + BSY, DIMY); ++y) {
+                    #else
+                    for (uint64_t y = 0; y < DIMY; ++y) {
+                    #endif
                         #pragma omp simd
                         #ifdef BSX
                         for (uint64_t x = bx; x < check_boundaries(bx + BSX, DIMX); ++x) {
@@ -276,20 +285,20 @@ auto one_iteration() -> void {
         double t1 = dml_micros();
         one_iteration();
         double t2 = dml_micros();
-//         printf("=> ");
-// #ifdef BSZ
-//         printf("[BSZ %u] ", BSZ);
-// #endif
-// #ifdef BSY
-//         printf("[BSY %u] ", BSY);
-// #endif
-// #ifdef BSX
-//         printf("[BSX %u] ", BSX);
-// #endif
-// #ifdef NOBS
-//         printf("[NOBS]");
-// #endif
-// printf("\n");
+        printf("=> ");
+#ifdef BSZ
+        printf("[BSZ %u] ", BSZ);
+#endif
+#ifdef BSY
+        printf("[BSY %u] ", BSY);
+#endif
+#ifdef BSX
+        printf("[BSX %u] ", BSX);
+#endif
+#ifdef NOBS
+        printf("[NOBS]");
+#endif
+printf("\n");
 
         // Avoid copying C into A with a simple pointer swap (zero-cost)
         matC.swap(matA);
