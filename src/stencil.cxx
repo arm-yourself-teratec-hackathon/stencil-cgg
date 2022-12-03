@@ -20,7 +20,7 @@ auto one_iteration() -> void;
 
 // for (uint64_t z = bz; z < (bz + 64 > DIMZ) ? DIMZ : bz + 64; ++z) {
 // for (uint64_t x = bx; x < check_boundaries(bx + BSX, DIMX); ++x) {
-#define check_boundaries(next_max_iter, max_dim) (unsigned long)(next_max_iter < max_dim) * next_max_iter + (unsigned long)(next_max_iter >= max_dim) * max_dim
+#define check_boundaries(next_max_iter, max_dim) (next_max_iter < max_dim) * next_max_iter + (next_max_iter >= max_dim) * max_dim
 
 #ifndef iters
     #define iters 5
@@ -134,28 +134,6 @@ auto one_iteration() -> void {
     //     }
     // }
 
-#pragma omp parallel for schedule(dynamic)
-    for (uint64_t z = 0; z < DIMZ; ++z) {
-        for (uint64_t y = 0; y < DIMY; ++y) {
-#pragma omp simd
-            for (uint64_t x = 0; x < DIMX; ++x) {
-                const uint64_t xyz = DIMXYZ(x, y, z);
-                matAB[xyz] = matA[xyz] * matB[xyz];
-            }
-        }
-    }
-
-#ifdef NOBS
-
-    #pragma omp parallel for schedule(dynamic)
-    for (uint64_t z = 0; z < DIMZ; ++z) {
-        for (uint64_t y = 0; y < DIMY; ++y) {
-    #pragma omp simd
-            for (uint64_t x = 0; x < DIMX; ++x) {
-
-
-#else
-
     #pragma omp parallel for schedule(dynamic)
     #ifdef BSZ
     for (uint64_t bz = 0; bz < DIMZ; bz += BSZ) {
@@ -166,6 +144,7 @@ auto one_iteration() -> void {
             #ifdef BSX
             for (uint64_t bx = 0; bx < DIMX; bx += BSX) {
             #endif
+
                 #ifdef BSZ
                 for (uint64_t z = bz; z < check_boundaries(bz + BSZ, DIMZ); ++z) {
                 #else
@@ -182,8 +161,60 @@ auto one_iteration() -> void {
                         #else
                         for (uint64_t x = 0; x < DIMX; ++x) {
                         #endif
-
+                            const uint64_t xyz = DIMXYZ(x, y, z);
+                            matAB[xyz] = matA[xyz] * matB[xyz];
+                        }
+                    }
+                }
+#if defined(BSX) && !defined(NOBS)
+            }
 #endif
+#if defined(BSY) && !defined(NOBS)
+        }
+#endif
+#if defined(BSZ) && !defined(NOBS)
+    }
+#endif
+
+// #ifdef NOBS
+
+    #pragma omp parallel for schedule(dynamic)
+    for (uint64_t z = 0; z < DIMZ; ++z) {
+        for (uint64_t y = 0; y < DIMY; ++y) {
+            #pragma omp simd
+            for (uint64_t x = 0; x < DIMX; ++x) {
+
+
+// #else
+
+//     #pragma omp parallel for schedule(dynamic)
+//     #ifdef BSZ
+//     for (uint64_t bz = 0; bz < DIMZ; bz += BSZ) {
+//     #endif
+//         #ifdef BSY
+//         for (uint64_t by = 0; by < DIMY; by += BSY) {
+//         #endif
+//             #ifdef BSX
+//             for (uint64_t bx = 0; bx < DIMX; bx += BSX) {
+//             #endif
+//                 #ifdef BSZ
+//                 for (uint64_t z = bz; z < check_boundaries(bz + BSZ, DIMZ); ++z) {
+//                 #else
+                // for (uint64_t z = 0; z < DIMZ; ++z) {
+//                 #endif
+//                     #ifdef BSY
+//                     for (uint64_t y = by; y < check_boundaries(by + BSY, DIMY); ++y) {
+//                     #else
+                    // for (uint64_t y = 0; y < DIMY; ++y) {
+//                     #endif
+//                         #pragma omp simd
+//                         #ifdef BSX
+//                         for (uint64_t x = bx; x < check_boundaries(bx + BSX, DIMX); ++x) {
+//                         #else
+                        // for (uint64_t x = 0; x < DIMX; ++x) {
+//                         #endif
+
+// #endif
 
                 // Pre-compute planes
                 const uint64_t xyz = DIMXYZ(x, y, z);
@@ -265,15 +296,15 @@ auto one_iteration() -> void {
             }
         }
     }
-#if defined(BSX) && !defined(NOBS)
-}
-#endif
-#if defined(BSY) && !defined(NOBS)
-}
-#endif
-#if defined(BSZ) && !defined(NOBS)
-}
-#endif
+// #if defined(BSX) && !defined(NOBS)
+// }
+// #endif
+// #if defined(BSY) && !defined(NOBS)
+// }
+// #endif
+// #if defined(BSZ) && !defined(NOBS)
+// }
+// #endif
 }
 
 [[nodiscard]] auto main() -> int32_t {
@@ -298,7 +329,7 @@ auto one_iteration() -> void {
 #ifdef NOBS
         printf("[NOBS]");
 #endif
-printf("\n");
+        printf("\n");
 
         // Avoid copying C into A with a simple pointer swap (zero-cost)
         matC.swap(matA);
