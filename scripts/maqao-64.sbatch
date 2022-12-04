@@ -6,5 +6,4 @@
 #SBATCH --priority=1
 #SBATCH -p slurm-a
 
-# Run MAQAO
 maqao oneview -R1 --config=cfg.lua -xp=maqao64-arm --replace
