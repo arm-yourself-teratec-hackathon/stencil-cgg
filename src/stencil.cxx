@@ -21,8 +21,8 @@ auto one_iteration() -> void;
 // for (uint64_t z = bz; z < (bz + 64 > DIMZ) ? DIMZ : bz + 64; ++z) {
 // for (uint64_t x = bx; x < check_boundaries(bx + BSX, DIMX); ++x) {
 #define check_boundaries(next_max_iter, max_dim)                                                   \
-    (unsigned long)(next_max_iter < max_dim) * next_max_iter +                                     \
-        (unsigned long)(next_max_iter >= max_dim) * max_dim
+    (uint64_t)(next_max_iter < max_dim) * next_max_iter +                                          \
+        (uint64_t)(next_max_iter >= max_dim) * max_dim
 
 #ifndef iters
     #define iters 5
@@ -33,9 +33,9 @@ auto one_iteration() -> void;
     #define DIMY 100UL
     #define DIMZ 100UL
 #else
-    #define DIMX (unsigned long)DIMM
-    #define DIMY (unsigned long)DIMM
-    #define DIMZ (unsigned long)DIMM
+    #define DIMX (uint64_t)DIMM
+    #define DIMY (uint64_t)DIMM
+    #define DIMZ (uint64_t)DIMM
 #endif
 
 #if defined(BSX) || defined(BSY) || defined(BSZ)
@@ -312,26 +312,28 @@ auto one_iteration() -> void {
 [[nodiscard]] auto main() -> int32_t {
     // No arguments as we defined them with the pre-processor
 
+    printf("=> ");
+#ifdef BSZ
+    printf("[BSZ %u] ", BSZ);
+#endif
+#ifdef BSY
+    printf("[BSY %u] ", BSY);
+#endif
+#ifdef BSX
+    printf("[BSX %u] ", BSX);
+#endif
+#ifdef NOBS
+    printf("[NOBS]");
+#endif
+    printf("\n");
+
     init();
+
     for (uint64_t i = 0; i < iters; ++i) {
         // Compute one iteration of Jacobi: C = B@A
         double t1 = dml_micros();
         one_iteration();
         double t2 = dml_micros();
-        printf("=> ");
-#ifdef BSZ
-        printf("[BSZ %u] ", BSZ);
-#endif
-#ifdef BSY
-        printf("[BSY %u] ", BSY);
-#endif
-#ifdef BSX
-        printf("[BSX %u] ", BSX);
-#endif
-#ifdef NOBS
-        printf("[NOBS]");
-#endif
-        printf("\n");
 
         // Avoid copying C into A with a simple pointer swap (zero-cost)
         matC.swap(matA);
