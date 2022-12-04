@@ -7,7 +7,7 @@
 experiment_name = "Stencil stability test g3 64c"
 
 -- Name of the executable to analyze
-executable     = "stencil2"
+executable     = "stencil"
 
 -- List of external libraries to analyze
 external_libraries = {
