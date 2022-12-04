@@ -20,9 +20,9 @@ auto one_iteration() -> void;
 
 // for (uint64_t z = bz; z < (bz + 64 > DIMZ) ? DIMZ : bz + 64; ++z) {
 // for (uint64_t x = bx; x < check_boundaries(bx + BSX, DIMX); ++x) {
-#define check_boundaries(next_max_iter, max_dim)                                                   \
-    (uint64_t)(next_max_iter < max_dim) * next_max_iter +                                          \
-        (uint64_t)(next_max_iter >= max_dim) * max_dim
+// #define check_boundaries(next_max_iter, max_dim)                                                   \
+//     (uint64_t)(next_max_iter < max_dim) * next_max_iter +                                          \
+//         (uint64_t)(next_max_iter >= max_dim) * max_dim
 
 #ifndef iters
     #define iters 5
@@ -128,18 +128,18 @@ auto one_iteration() -> void {
             #endif
 
                 #if BSZ1 && !defined(NOBS)
-                for (uint64_t z = bz; z < check_boundaries(bz + BSZ1, DIMZ); ++z) {
+                for (uint64_t z = bz; z < std::min(bz + BSZ1, DIMZ); ++z) {
                 #else
                 for (uint64_t z = 0; z < DIMZ; ++z) {
                 #endif
                     #if BSY1 && !defined(NOBS)
-                    for (uint64_t y = by; y < check_boundaries(by + BSY1, DIMY); ++y) {
+                    for (uint64_t y = by; y < std::min(by + BSY1, DIMY); ++y) {
                     #else
                     for (uint64_t y = 0; y < DIMY; ++y) {
                     #endif
                         #pragma omp simd
                         #if BSX1 && !defined(NOBS)
-                        for (uint64_t x = bx; x < check_boundaries(bx + BSX1, DIMX); ++x) {
+                        for (uint64_t x = bx; x < std::min(bx + BSX1, DIMX); ++x) {
                         #else
                         for (uint64_t x = 0; x < DIMX; ++x) {
                         #endif
@@ -172,18 +172,18 @@ auto one_iteration() -> void {
             #endif
 
                 #if BSZ2 && !defined(NOBS)
-                for (uint64_t z = bz; z < check_boundaries(bz + BSZ2, DIMZ); ++z) {
+                for (uint64_t z = bz; z < std::min(bz + BSZ2, DIMZ); ++z) {
                 #else
                 for (uint64_t z = 0; z < DIMZ; ++z) {
                 #endif
                     #if BSY2 && !defined(NOBS)
-                    for (uint64_t y = by; y < check_boundaries(by + BSY2, DIMY); ++y) {
+                    for (uint64_t y = by; y < std::min(by + BSY2, DIMY); ++y) {
                     #else
                     for (uint64_t y = 0; y < DIMY; ++y) {
                     #endif
                         #pragma omp simd
                         #if BSX2 && !defined(NOBS)
-                        for (uint64_t x = bx; x < check_boundaries(bx + BSX2, DIMX); ++x) {
+                        for (uint64_t x = bx; x < std::min(bx + BSX2, DIMX); ++x) {
                         #else
                         for (uint64_t x = 0; x < DIMX; ++x) {
                         #endif
