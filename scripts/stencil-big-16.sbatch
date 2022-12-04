@@ -4,7 +4,7 @@
 #SBATCH -o slurm-jobs/big.out
 #SBATCH --exclusive
 #SBATCH --priority=1
-#SBATCH -p slurm-a
+#SBATCH -p basic-slurm
 
 ./stencil > /dev/null
 ./stencil
