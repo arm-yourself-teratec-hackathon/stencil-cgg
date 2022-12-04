@@ -4,7 +4,7 @@
 -- Template of configuration file for oneview module
 
 -- Name of the experiment specified in report main pages
-experiment_name = nil
+experiment_name = "Stencil stability test g3 64c"
 
 -- Name of the executable to analyze
 executable     = "stencil"
