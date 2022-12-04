@@ -10,7 +10,7 @@ import sys
 
 # Parse program arguments
 def build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog = "stencil-assert")
+    parser = argparse.ArgumentParser(prog = "assert")
     parser.add_argument("-d", "--dimensions",
                         nargs = 3,
                         metavar = ("DIM_X", "DIM_Y", "DIM_Z"),
@@ -27,7 +27,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-a", "--accuracy",
                         metavar = "MIN_TOL",
                         type = float,
-                        default = 1e-12,
+                        default = 1e-13,
                         dest = "accuracy",
                         help = "specify the minimum accuracy required when comparing coefficients (default is 1e-12)")
     parser.add_argument("-r", "--rerun",
