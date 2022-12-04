@@ -3,7 +3,7 @@ maqao*/
 ref/
 
 # Files to ignore
-stencil
+stencil*
 cfg.lua
 *.tar
 *.out
