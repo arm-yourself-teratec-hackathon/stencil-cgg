@@ -213,7 +213,7 @@ def main():
     print(f"  Range (\033[36mmin\033[0m … \033[35mmax\033[0m):  \033[36m{cur_min / 1000.0:3.2f} ms\033[0m ... \033[35m{cur_max / 1000.0:3.2f} ms\033[0m\n")
 
     print("\033[1mSummary:\033[0m")
-    print(f"  \033[1m'current'\033[0m is \033[1;32m~{ref_avg / cur_avg:.2f}\033[0m times faster than \033[1m'reference'\033[0m")
+    print(f"  \033[1m'current'\033[0m is \033[1;32m~{ref_max / cur_min:.2f}\033[0m times faster than \033[1m'reference'\033[0m")
 
     exit(accuracy_errors)
 
