@@ -29,9 +29,9 @@ auto one_iteration() -> void;
 #endif
 
 #ifndef DIMM
-    #define DIMX 100UL
-    #define DIMY 100UL
-    #define DIMZ 100UL
+    #define DIMX 1000UL
+    #define DIMY 1000UL
+    #define DIMZ 1000UL
 #else
     #define DIMX (uint64_t) DIMM
     #define DIMY (uint64_t) DIMM
