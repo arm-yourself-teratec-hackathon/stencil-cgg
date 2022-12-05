@@ -15,21 +15,21 @@ def build_parser() -> argparse.ArgumentParser:
                         nargs = 3,
                         metavar = ("DIM_X", "DIM_Y", "DIM_Z"),
                         type = int,
-                        default = [100, 100, 100],
+                        default = [1000, 1000, 1000],
                         dest = "dims",
-                        help = "specify dimensions to use (default is 100x100x100)")
+                        help = "specify the dimensions to use (default is 1000x1000x1000)")
     parser.add_argument("-i", "--iterations",
                         metavar = "ITER",
                         type = int,
                         default = 5,
                         dest = "iters",
-                        help = "specify number of iterations to use (default is 5)")
+                        help = "specify the number of iterations to use (default is 5)")
     parser.add_argument("-a", "--accuracy",
                         metavar = "MIN_TOL",
                         type = float,
                         default = 1e-13,
                         dest = "accuracy",
-                        help = "specify the minimum accuracy required when comparing coefficients (default is 1e-12)")
+                        help = "specify the minimum accuracy required when comparing coefficients (default is 1e-13)")
     parser.add_argument("-r", "--rerun",
                         action = "store_true",
                         default = False,
@@ -39,7 +39,7 @@ def build_parser() -> argparse.ArgumentParser:
                         choices = ["small", "medium", "big", "official"],
                         default = None,
                         dest = "preset",
-                        help = "specify a preset run to compare against: small (100x100x100), medium (500x500x500) or big (1000x1000x1000)"),
+                        help = "specify a preset run to compare against: small (100x100x100), medium (500x500x500), big (1000x1000x1000) or official (1000x1000x1000)"),
     parser.add_argument("-o", "--output",
                         type = str,
                         default = None,
@@ -48,7 +48,7 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument("-f", "--fail",
                         action = "store_true",
                         dest = "fail",
-                        help = "specify if a run should fail if one or more coefficient do not reach the required accuracy or in case of mismatched dimensions")
+                        help = "specify if a run should fail if one or more coefficient do not reach the required accuracy, or in case of mismatched dimensions")
     return parser
 
 
@@ -59,9 +59,13 @@ def colorstrip(data: str) -> str:
 
 # Run command
 def run(command: str) -> list:
-    bin = command.split()[0]
+    bin = command.split(maxsplit = 1)[0]
+    args = command.split(maxsplit = 1)[1:]
     if not os.path.exists(bin):
         raise FileNotFoundError(errno.ENOENT, os.strerror(errno.ENOENT), bin)
+    if args[0] != 1000 or args[1] != 1000 or args[2] != 1000:
+        # TODO: re-compile with appropriate dimensions
+        pass
     run = os.popen(command)
     res = run.read().strip('\n')
     run.close()
@@ -181,14 +185,35 @@ def main():
     else:
         print(f"{chr(10) if accuracy_errors + dimension_errors != 0 else ''}\033[1;32mSuccess!\033[0m Run passed all checks")
 
+    # Sort data
+    ref_times.sort()
+    cur_times.sort()
+
+    # Get min/max
+    ref_min = ref_times[0]
+    ref_max = ref_times[-1]
+    cur_min = cur_times[0]
+    cur_max = cur_times[-1]
+
     # Compute average
     real_iters = min(len(ref), len(cur))
     ref_avg = functools.reduce(lambda sum, x: sum + x, ref_times, 0.0) / real_iters
     cur_avg = functools.reduce(lambda sum, x: sum + x, cur_times, 0.0) / real_iters
 
-    print(f"Reference average: \033[1m{ref_avg / 1000.0:3.2f} ms\033[0m")
-    print(f"  Current average: \033[1m{cur_avg / 1000.0:3.2f} ms\033[0m")
-    print(f"\nAcceleration: \033[1;32m{ref_avg / cur_avg:.2f}x\033[0m")
+    # Compute standard deviation
+    ref_std = math.sqrt(functools.reduce(lambda sum, x: sum + (x - ref_avg)**2, ref_times, 0.0) / (real_iters - 1))
+    cur_std = math.sqrt(functools.reduce(lambda sum, x: sum + (x - cur_avg)**2, cur_times, 0.0) / (real_iters - 1))
+
+    print("\n\033[1mBenchmark 1:\033[m reference stencil")
+    print(f"  Time (\033[1;32mmean\033[0m +/- \033[32mσ\033[0m):  \033[1;32m{ref_avg / 1000.0:3.2f} ms\033[0m +/- \033[32m{ref_std / 1000.0:3.2f} ms\033[0m")
+    print(f"  Range (\033[36mmin\033[0m … \033[35mmax\033[0m):  \033[36m{ref_min / 1000.0:3.2f} ms\033[0m ... \033[35m{ref_max / 1000.0:3.2f} ms\033[0m")
+
+    print("\n\033[1mBenchmark 2:\033[m current stencil")
+    print(f"  Time (\033[1;32mmean\033[0m +/- \033[32mσ\033[0m):  \033[1;32m{cur_avg / 1000.0:3.2f} ms\033[0m +/- \033[32m{cur_std / 1000.0:3.2f} ms\033[0m")
+    print(f"  Range (\033[36mmin\033[0m … \033[35mmax\033[0m):  \033[36m{cur_min / 1000.0:3.2f} ms\033[0m ... \033[35m{cur_max / 1000.0:3.2f} ms\033[0m\n")
+
+    print("\033[1mSummary:\033[0m")
+    print(f"  \033[1m'current'\033[0m is \033[1;32m~{ref_avg / cur_avg:.2f}\033[0m times faster than \033[1m'reference'\033[0m")
 
     exit(accuracy_errors)
 
