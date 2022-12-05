@@ -1,7 +1,7 @@
 SRC := src/stencil.cxx
 BIN := stencil
 COMMON_FLAGS := -Ofast -finline-functions -g -fno-omit-frame-pointer
-LDFLAGS := -larmpl
+LDFLAGS :=
 OPTION := 
 
 all: $(BIN)

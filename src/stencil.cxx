@@ -1,14 +1,10 @@
-#include <cassert>
 #include <cmath>
-#include <cstdint>
-#include <cstring>
 #include <iostream>
 #include <stdint.h>
 #include <sys/time.h>
 #include <vector>
 
 // Functions forward-declarations
-// [[nodiscard]] auto main(int32_t argc, char** argv) -> int32_t;
 [[nodiscard]] auto main() -> int32_t;
 auto init() -> void;
 auto one_iteration() -> void;
@@ -17,25 +13,25 @@ auto one_iteration() -> void;
 [[nodiscard]] auto dml_micros() -> double;
 
 // Pre-processor defines so users can override at compile-time
-
-// for (uint64_t z = bz; z < (bz + 64 > DIMZ) ? DIMZ : bz + 64; ++z) {
-// for (uint64_t x = bx; x < check_boundaries(bx + BSX, DIMX); ++x) {
-#define check_boundaries(next_max_iter, max_dim)                                                   \
-    (uint64_t)(next_max_iter < max_dim) * next_max_iter +                                          \
-        (uint64_t)(next_max_iter >= max_dim) * max_dim
-
 #ifndef iters
     #define iters 5
 #endif
 
 #ifndef DIMM
-    #define DIMX 100UL
-    #define DIMY 100UL
-    #define DIMZ 100UL
+    #define DIMX 1000UL
+    #define DIMY 1000UL
+    #define DIMZ 1000UL
 #else
     #define DIMX (uint64_t) DIMM
     #define DIMY (uint64_t) DIMM
     #define DIMZ (uint64_t) DIMM
+#endif
+
+#ifndef BSZ2
+    #define BSZ2 2
+#endif
+#ifndef BSY2
+    #define BSY2 2
 #endif
 
 // Constant expressions declarations
@@ -94,7 +90,7 @@ auto init() -> void {
             }
         }
 
-// Initialize the center of A, which is the data matrix
+        // Initialize the center of A, which is the data matrix
         #pragma omp for
         for (uint64_t z = 0; z < DIMZ; ++z) {
             for (uint64_t y = 0; y < DIMY; ++y) {
@@ -128,18 +124,18 @@ auto one_iteration() -> void {
             #endif
 
                 #if BSZ1 && !defined(NOBS)
-                for (uint64_t z = bz; z < check_boundaries(bz + BSZ1, DIMZ); ++z) {
+                for (uint64_t z = bz; z < std::min(bz + BSZ1, DIMZ); ++z) {
                 #else
                 for (uint64_t z = 0; z < DIMZ; ++z) {
                 #endif
                     #if BSY1 && !defined(NOBS)
-                    for (uint64_t y = by; y < check_boundaries(by + BSY1, DIMY); ++y) {
+                    for (uint64_t y = by; y < std::min(by + BSY1, DIMY); ++y) {
                     #else
                     for (uint64_t y = 0; y < DIMY; ++y) {
                     #endif
                         #pragma omp simd
                         #if BSX1 && !defined(NOBS)
-                        for (uint64_t x = bx; x < check_boundaries(bx + BSX1, DIMX); ++x) {
+                        for (uint64_t x = bx; x < std::min(bx + BSX1, DIMX); ++x) {
                         #else
                         for (uint64_t x = 0; x < DIMX; ++x) {
                         #endif
@@ -172,18 +168,18 @@ auto one_iteration() -> void {
             #endif
 
                 #if BSZ2 && !defined(NOBS)
-                for (uint64_t z = bz; z < check_boundaries(bz + BSZ2, DIMZ); ++z) {
+                for (uint64_t z = bz; z < std::min(bz + BSZ2, DIMZ); ++z) {
                 #else
                 for (uint64_t z = 0; z < DIMZ; ++z) {
                 #endif
                     #if BSY2 && !defined(NOBS)
-                    for (uint64_t y = by; y < check_boundaries(by + BSY2, DIMY); ++y) {
+                    for (uint64_t y = by; y < std::min(by + BSY2, DIMY); ++y) {
                     #else
                     for (uint64_t y = 0; y < DIMY; ++y) {
                     #endif
                         #pragma omp simd
                         #if BSX2 && !defined(NOBS)
-                        for (uint64_t x = bx; x < check_boundaries(bx + BSX2, DIMX); ++x) {
+                        for (uint64_t x = bx; x < std::min(bx + BSX2, DIMX); ++x) {
                         #else
                         for (uint64_t x = 0; x < DIMX; ++x) {
                         #endif
@@ -205,10 +201,7 @@ auto one_iteration() -> void {
                             const double exp7 = exponents[7];
 
                             // Get `matC[xyz]` into temporary
-                            double matC_xyz = matC[xyz];
-
-                            // Compute for current cell (o = 0)
-                            matC_xyz = matAB[xyz];
+                            double matC_xyz = matAB[xyz];
 
                             // Compute all orders on the x axis (first positive direction, then negative one)
                             matC_xyz += matAB[x + 1 + yz] * exp0;
@@ -281,30 +274,6 @@ auto one_iteration() -> void {
 
 [[nodiscard]] auto main() -> int32_t {
     // No arguments as we defined them with the pre-processor
-
-    printf("=> ");
-#ifdef BSZ1
-    printf("[BSZ1 %u] ", BSZ1);
-#endif
-#ifdef BSY1
-    printf("[BSY1 %u] ", BSY1);
-#endif
-#ifdef BSX1
-    printf("[BSX1 %u] ", BSX1);
-#endif
-#ifdef BSZ2
-    printf("[BSZ2 %u] ", BSZ2);
-#endif
-#ifdef BSY2
-    printf("[BSY2 %u] ", BSY2);
-#endif
-#ifdef BSX2
-    printf("[BSX2 %u] ", BSX2);
-#endif
-#ifdef NOBS
-    printf("[NOBS]");
-#endif
-    printf("\n");
 
     init();
 
