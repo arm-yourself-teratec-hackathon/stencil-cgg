@@ -1,0 +1,17 @@
+CompileFlags:
+    Add: [-Wall, -Wextra, --include-dir=include/, -march=native, -std=c++2a]
+    Compiler: clang++
+
+Diagnostics:
+    UnusedIncludes: Strict
+    ClangTidy:
+        Add: [performance*, modernize*, readability*]
+        CheckOptions:
+            readability-identifier-naming.VariableCase: snake_case
+        Remove: readability-identifier-length
+
+InlayHints:
+    Designators: Yes
+    Enabled: Yes
+    ParameterNames: Yes
+    DeducedTypes: Yes

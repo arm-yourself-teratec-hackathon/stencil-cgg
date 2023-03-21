@@ -42,7 +42,6 @@ constexpr uint64_t MAXY = DIMY + 2 * order;
 constexpr uint64_t MAXZ = DIMZ + 2 * order;
 constexpr uint64_t xyplane = MAXX * MAXY;
 constexpr uint64_t MATsize = MAXX * MAXY * MAXZ;
-// constexpr uint64_t BLOCK_SIZE = 20;
 
 // Global variables declarations
 // Dynamically allocate memory of size DIMX * DIMY * DIMZ + ghost region on 6 faces
@@ -109,7 +108,6 @@ auto init() -> void {
 }
 
 auto one_iteration() -> void {
-
     // Define cache-blocking using the preprocessor.
     // BS[Z,Y,X]1 are preprocessor variables for the cache blocking of the first loop
     #pragma omp parallel for schedule(dynamic)
@@ -122,7 +120,6 @@ auto one_iteration() -> void {
             #if BSX1 && !defined(NOBS)
             for (uint64_t bx = 0; bx < DIMX; bx += BSX1) {
             #endif
-
                 #if BSZ1 && !defined(NOBS)
                 for (uint64_t z = bz; z < std::min(bz + BSZ1, DIMZ); ++z) {
                 #else
@@ -144,15 +141,15 @@ auto one_iteration() -> void {
                         }
                     }
                 }
-#if defined(BSZ1) && !defined(NOBS)
+            #if defined(BSZ1) && !defined(NOBS)
             }
-#endif
-#if defined(BSY1) && !defined(NOBS)
+            #endif
+        #if defined(BSY1) && !defined(NOBS)
         }
-#endif
-#if defined(BSX1) && !defined(NOBS)
+        #endif
+    #if defined(BSX1) && !defined(NOBS)
     }
-#endif
+    #endif
 
     // Define cache-blocking using the preprocessor.
     // BS[Z,Y,X]2 are preprocessor variables for the cache blocking of the second and main loop
@@ -166,7 +163,6 @@ auto one_iteration() -> void {
             #if BSX2 && !defined(NOBS)
             for (uint64_t bx = 0; bx < DIMX; bx += BSX2) {
             #endif
-
                 #if BSZ2 && !defined(NOBS)
                 for (uint64_t z = bz; z < std::min(bz + BSZ2, DIMZ); ++z) {
                 #else
@@ -183,7 +179,6 @@ auto one_iteration() -> void {
                         #else
                         for (uint64_t x = 0; x < DIMX; ++x) {
                         #endif
-
                             // Pre-compute planes
                             const uint64_t xyz = DIMXYZ(x, y, z);
                             const uint64_t yz = (z + order) * xyplane + (y + order) * MAXX + order;
@@ -261,20 +256,19 @@ auto one_iteration() -> void {
                         }
                     }
                 }
-#if defined(BSZ2) && !defined(NOBS)
+            #if defined(BSZ2) && !defined(NOBS)
             }
-#endif
-#if defined(BSY2) && !defined(NOBS)
+            #endif
+        #if defined(BSY2) && !defined(NOBS)
         }
-#endif
-#if defined(BSX2) && !defined(NOBS)
+        #endif
+    #if defined(BSX2) && !defined(NOBS)
     }
-#endif
+    #endif
 }
 
 [[nodiscard]] auto main() -> int32_t {
     // No arguments as we defined them with the pre-processor
-
     init();
 
     for (uint64_t i = 0; i < iters; ++i) {

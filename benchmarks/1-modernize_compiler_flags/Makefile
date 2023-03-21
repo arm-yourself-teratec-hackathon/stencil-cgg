@@ -1,0 +1,14 @@
+SRC := stencil.cxx
+BIN := stencil
+CXXFLAGS := -std=c++17 -Wall -Wextra -march=native -Ofast -finline-functions -funroll-loops -ftree-vectorize -fno-omit-frame-pointer -g
+
+all: $(BIN)
+
+$(BIN): $(SRC)
+	$(CXX) $(CXXFLAGS) $(DFLAGS) $? -o $(BIN)
+
+check: $(BIN)
+	@python3 ../../scripts/assert.py $(ARGS)
+
+clean:
+	@rm -rf $(BIN)

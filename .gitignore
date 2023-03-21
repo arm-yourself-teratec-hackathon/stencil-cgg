@@ -1,11 +1,11 @@
 # Directories to ignore
-maqao*/
-ref/
+/maqao
+/log
 
 # Files to ignore
 stencil
-maqao*
 *.tar
-*.out
+*.log
 *.asm
 *.tgz
+*.pdf
