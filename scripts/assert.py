@@ -6,6 +6,7 @@ import functools
 import math
 import os
 import sys
+from pathlib import Path
 
 
 # Parse program arguments
@@ -90,6 +91,7 @@ def parse_output(file: str) -> list:
 def main():
     parser = build_parser()
     args = parser.parse_args()
+    fpath = Path(__file__).parent.parent.absolute()
 
     # Get dimensions
     dimx = args.dims[0]
@@ -117,17 +119,17 @@ def main():
     if args.rerun is True:
         print("Re-running reference code...", end = ' ')
         sys.stdout.flush()
-        ref = run(f"ref/stencil {dimx} {dimy} {dimz} {iter}")
+        ref = run(f"{fpath}/ref/stencil {dimx} {dimy} {dimz} {iter}")
         print(f"done{chr(10) if args.output is not None else ''}")
     else:
         if args.preset == "medium":
-            ref = parse_output("ref/ref500.out")
+            ref = parse_output(f"{fpath}/ref/ref500.out")
         elif args.preset == "big":
-            ref = parse_output("ref/ref1000.out")
+            ref = parse_output(f"{fpath}/ref/ref1000.out")
         elif args.preset == "official":
-            ref = parse_output("ref/ref_official.out")
+            ref = parse_output(f"{fpath}/ref/ref_official.out")
         else:
-            ref = parse_output("ref/ref.out")
+            ref = parse_output(f"{fpath}/ref/ref.out")
 
     if args.output is not None:
         if os.path.exists(args.output) and os.path.isfile(args.output):
