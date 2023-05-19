@@ -153,7 +153,7 @@ auto jacobi_iteration(
         for (size_t bz = 0; bz < DIMZ; bz += BLOCK_Z) {
             for (size_t by = 0; by < DIMY; by += BLOCK_Y) {
                 for (size_t bx = 0; bx < DIMX; bx += BLOCK_X) {
-                    for (size_t z = bz; z < std::min(z + BLOCK_Y, DIMZ); ++z) {
+                    for (size_t z = bz; z < std::min(z + BLOCK_Z, DIMZ); ++z) {
                         for (size_t y = by; y < std::min(y + BLOCK_Y, DIMY); ++y) {
                             size_t const yz = (z + HALF_ORDER) * XY_PLANE + (y + HALF_ORDER) * MAXX + HALF_ORDER;
                             #pragma omp simd
